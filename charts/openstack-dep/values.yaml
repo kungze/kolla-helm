@@ -1,0 +1,96 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+## @param clusterDomainSuffix openstack dependency env generate conn info secret name
+clusterDomainSuffix: cluster.local
+
+## @section Database Parameters
+## MariaDB chart configuration
+mariadb:
+  ## @param mariadb.enabled [t#开启mariadb] Deploy a MariaDB server to satisfy the applications database requirements
+  enabled: true
+  global:
+    storageClass: ""
+  ## @param mariadb.architecture [t#MariaDB架构] MariaDB architecture. Allowed values: `standalone` or `replication`
+  architecture: standalone
+  ## MariaDB Authentication parameters
+  ## @param mariadb.auth.existingSecret [t#MariaDB auth 配置] Use existing secret for password details
+  auth:
+    existingSecret: openstack-password
+  ## MariaDB Primary configuration
+  primary:
+    ## MariaDB Primary Persistence parameters
+    ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## @param mariadb.primary.persistence.enabled Enable persistence on MariaDB using PVC(s)
+    ## @param mariadb.primary.persistence.storageClass Persistent Volume storage class
+    ## @param mariadb.primary.persistence.accessModes [m#array] Persistent Volume access modes
+    ## @param mariadb.primary.persistence.size Persistent Volume size
+    ##
+    persistence:
+      enabled: true
+      storageClass: ""
+      accessModes:
+        - ReadWriteOnce
+      size: 8Gi
+
+## @section RabbitMQ chart parameters
+## RabbitMQ chart configuration
+## https://github.com/bitnami/charts/blob/master/bitnami/rabbitmq/values.yaml
+rabbitmq:
+  ## @param rabbitmq.enabled [t#开启rabbitmq] Enable/disable RabbitMQ chart installation
+  enabled: false
+  ## @param rabbitmq.auth.username [t#RabbitMQ用户名] RabbitMQ username
+  ## @param rabbitmq.auth.existingPasswordSecret [t#RabbitMQ 密钥名称] Use existing secret for password details
+  auth:
+    username: openstack
+    existingPasswordSecret: openstack-password
+  ## @param rabbitmq.persistence.enabled Enable persistence on Rabbitmq using PVC(s)
+  ## @param rabbitmq.persistence.storageClass Persistent Volume storage class
+  ## @param rabbitmq.persistence.accessModes [m#array] Persistent Volume access modes
+  ## @param rabbitmq.persistence.size Persistent Volume size
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
+
+## @section Memcached chart parameters
+
+## Memcached chart configuration
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/memcached/values.yaml
+memcached:
+  ## @param memcached.enabled [t#开启memcached] Deploy a Memcached server for caching database queries
+  enabled: true
+  ## Service parameters
+  service:
+    ## @param memcached.service.port Memcached service port
+    port: 11211
+
+## @section nginx-ingress-controller chart parameters
+
+## nginx-ingress-controller chart configuration
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/nginx-ingress-controller/values.yaml
+nginx-ingress-controller:
+  ## @param nginx-ingress-controller.enabled [t#开启nginx-ingress-controller] Deploy a ingress controller server
+  enabled: true
+  ## @param nginx-ingress-controller.service.type controller service type
+  service:
+    type: ClusterIP
+  ## @param nginx-ingress-controller.podLabels.app for nginx-ingress-controller pod add labels to be compatible with SVC
+  podLabels:
+    app: ingress-api
+  ## @param nginx-ingress-controller.kind Install as DaemonSet
+  kind: DaemonSet
+  ## @param nginx-ingress-controller.daemonset.useHostPort If `kind` is `DaemonSet`, this will enable `hostPort` for `TCP/80` and `TCP/443`
+  daemonset:
+    useHostPort: true

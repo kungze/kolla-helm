@@ -1,0 +1,40 @@
+name: Install openstack-dep chart
+
+on:
+  pull_request_target:
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - main
+    paths:
+      - 'charts/openstack-dep/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.2.1
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
+
+      - name: Create k8s namespace
+        run:
+          kubectl create namespace openstack-dep
+
+      - name: Install password chart
+        run:
+          helm install openstack-password ../../charts/password --namespace openstack-dep
+
+      - name: Run chart-testing (install)
+        run: ct install --namespace openstack-dep --config .github/ct-install.yaml
