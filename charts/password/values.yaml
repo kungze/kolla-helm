@@ -1,0 +1,4 @@
+## kolla-helm/password
+## It is required by CI/CD tools and processes.
+## @skip exampleValue
+exampleValue: password-chart

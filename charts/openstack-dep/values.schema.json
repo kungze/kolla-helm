@@ -1,0 +1,217 @@
+{
+    "title": "Chart Values",
+    "type": "object",
+    "properties": {
+        "clusterDomainSuffix": {
+            "form": true,
+            "type": "string",
+            "description": "The domain suffix of of the current k8s cluser",
+            "title": "Cluser domain suffix",
+            "default": "cluster.local"
+        },
+        "mariadb": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not deploy mariadb database",
+                    "title": "Mariadb",
+                    "default": true
+                },
+                "architecture": {
+                    "form": true,
+                    "type": "string",
+                    "description": "MariaDB architecture (`standalone` or `replication`)",
+                    "title": "Architecture",
+                    "default": "standalone"
+                },
+                "auth": {
+                    "type": "object",
+                    "properties": {
+                        "existingSecret": {
+                            "form": true,
+                            "type": "string",
+                            "description": "Use the secret of the kolla-helm/charts/password release to provide the password for mariadb instance",
+                            "title": "Password chart release",
+                            "default": "openstack-password"
+                        }
+                    }
+                },
+                "primary": {
+                    "type": "object",
+                    "properties": {
+                        "persistence": {
+                            "type": "object",
+                            "properties": {
+                                "storageClass": {
+                                    "form": true,
+                                    "type": "string",
+                                    "description": "Persistent Volume storage class",
+                                    "title": "Primary Storage Class",
+                                    "default": ""
+                                },
+                                "size": {
+                                    "form": true,
+                                    "type": "string",
+                                    "description": "Persistent Volume size",
+                                    "title": "Primary Storage Size",
+                                    "default": "8Gi"
+                                }
+                            }
+                        }
+                    }
+                },
+                "secondary": {
+                    "type": "object",
+                    "properties": {
+                        "replicaCount": {
+                            "form": true,
+                            "type": "number",
+                            "description": "Number of MariaDB secondary replicas",
+                            "title": "Replica Number",
+                            "default": 1
+                        },
+                        "persistence": {
+                            "type": "object",
+                            "properties": {
+                                "storageClass": {
+                                    "form": true,
+                                    "type": "string",
+                                    "description": "MariaDB secondary persistent volume storage Class",
+                                    "title": "Replica Storage Class",
+                                    "default": ""
+                                },
+                                "size": {
+                                    "form": true,
+                                    "type": "string",
+                                    "description": "MariaDB secondary persistent volume size",
+                                    "title": "Replica Storage Size",
+                                    "default": "8Gi"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "rabbitmq": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not deploy rabbitmq",
+                    "title": "Rabbitmq",
+                    "default": true
+                },
+                "auth": {
+                    "type": "object",
+                    "properties": {
+                        "username": {
+                            "form": true,
+                            "type": "string",
+                            "description": "RabbitMQ username",
+                            "title": "Username",
+                            "default": "openstack"
+                        },
+                        "existingPasswordSecret": {
+                            "form": true,
+                            "type": "string",
+                            "description": "Use the secret of the kolla-helm/charts/password release to provide the password for rabbitmq instance",
+                            "title": "Password chart release",
+                            "default": "openstack-password"
+                        }
+                    }
+                },
+                "persistence": {
+                    "type": "object",
+                    "properties": {
+                        "storageClass": {
+                            "form": true,
+                            "type": "string",
+                            "description": "Persistent Volume storage class",
+                            "title": "Storage Class",
+                            "default": ""
+                        },
+                        "size": {
+                            "form": true,
+                            "type": "string",
+                            "description": "Persistent Volume size",
+                            "title": "Storage Size",
+                            "default": "8Gi"
+                        }
+                    }
+                }
+            }
+        },
+        "memcached": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not deploy memcached",
+                    "title": "Memcached",
+                    "default": true
+                },
+                "service": {
+                    "type": "object",
+                    "properties": {
+                        "port": {
+                            "form": true,
+                            "type": "number",
+                            "description": "Memcached service port",
+                            "default": 11211
+                        }
+                    }
+                }
+            }
+        },
+        "nginx-ingress-controller": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not deploy nginx-ingress-controller",
+                    "title": "Nginx-ingress-controller",
+                    "default": true
+                },
+                "defaultBackend": {
+                    "type": "object",
+                    "properties": {
+                        "service": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "form": true,
+                                    "type": "string",
+                                    "description": "Kubernetes Service type for default backend",
+                                    "default": "ClusterIP"
+                                }
+                            }
+                        }
+                    }
+                },
+                "kind": {
+                    "form": true,
+                    "type": "string",
+                    "description": "Install as DaemonSet",
+                    "default": "DaemonSet"
+                },
+                "daemonset": {
+                    "type": "object",
+                    "properties": {
+                        "useHostPort": {
+                            "form": true,
+                            "type": "boolean",
+                            "description": "If `kind` is `DaemonSet`, this will enable `hostPort` for `TCP/80` and `TCP/443`",
+                            "default": true
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
