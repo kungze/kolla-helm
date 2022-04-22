@@ -1,0 +1,112 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+## @section Global Parameters
+## @param clusterDomainSuffix [t#Cluser domain suffix] The domain suffix of of the current k8s cluser
+clusterDomainSuffix: cluster.local
+
+## @section Database Parameters
+## MariaDB chart configuration
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/mariadb/values.yaml
+mariadb:
+  ## @param mariadb.enabled [t#Mariadb] Whether or not deploy mariadb database
+  enabled: true
+  ## @param mariadb.architecture [t#Architecture] MariaDB architecture (`standalone` or `replication`)
+  architecture: standalone
+  ## @param mariadb.auth.existingSecret [t#Password chart release] Use the secret of the kolla-helm/charts/password release to provide the password for mariadb instance
+  auth:
+    existingSecret: openstack-password
+  ## MariaDB Primary configuration
+  primary:
+    ## MariaDB Primary Persistence parameters
+    ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
+    ## @param mariadb.primary.persistence.storageClass [t#Primary Storage Class] Persistent Volume storage class
+    ## @param mariadb.primary.persistence.size [t#Primary Storage Size] Persistent Volume size
+    ## @skip mariadb.primary.persistence.enabled
+    ## @skip mariadb.primary.persistence.accessModes
+    persistence:
+      storageClass: ""
+      size: 8Gi
+      enabled: true
+      accessModes:
+        - ReadWriteOnce
+  ## MariaDB Secondary configuration
+  secondary:
+    ## @param mariadb.secondary.replicaCount [t#Replica Number] Number of MariaDB secondary replicas
+    replicaCount: 1
+    ## @param mariadb.secondary.persistence.storageClass [t#Replica Storage Class] MariaDB secondary persistent volume storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    ## @param mariadb.secondary.persistence.size [t#Replica Storage Size] MariaDB secondary persistent volume size
+    ## @skip mariadb.secondary.persistence.enabled
+    ## @skip mariadb.secondary.persistence.accessModes
+    persistence:
+      storageClass: ""
+      size: 8Gi
+      enabled: true
+      accessModes:
+        - ReadWriteOnce
+
+## @section RabbitMQ parameters
+## RabbitMQ chart configuration
+## https://github.com/bitnami/charts/blob/master/bitnami/rabbitmq/values.yaml
+rabbitmq:
+  ## @param rabbitmq.enabled [t#Rabbitmq] Whether or not deploy rabbitmq
+  enabled: true
+  ## @param rabbitmq.auth.username [t#Username] RabbitMQ username
+  ## @param rabbitmq.auth.existingPasswordSecret [t#Password chart release] Use the secret of the kolla-helm/charts/password release to provide the password for rabbitmq instance
+  auth:
+    username: openstack
+    existingPasswordSecret: openstack-password
+  ## @param rabbitmq.persistence.storageClass [t#Storage Class] Persistent Volume storage class
+  ## @param rabbitmq.persistence.size [t#Storage Size] Persistent Volume size
+  ## @skip rabbitmq.persistence.enabled
+  ## @skip rabbitmq.persistence.accessModes
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+
+## @section Memcached parameters
+## Memcached chart configuration
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/memcached/values.yaml
+memcached:
+  ## @param memcached.enabled [t#Memcached] Whether or not deploy memcached
+  enabled: true
+  ## Service parameters
+  service:
+    ## @param memcached.service.port Memcached service port
+    port: 11211
+
+## @section Nginx-ingress-controller  parameters
+## nginx-ingress-controller chart configuration
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/nginx-ingress-controller/values.yaml
+nginx-ingress-controller:
+  ## @param nginx-ingress-controller.enabled [t#Nginx-ingress-controller] Whether or not deploy nginx-ingress-controller
+  enabled: true
+  ## @param nginx-ingress-controller.service.type Kubernetes Service type for default backend
+  service:
+    type: ClusterIP
+  ## @skip nginx-ingress-controller.podLabels
+  podLabels:
+    app: ingress-api
+  ## @param nginx-ingress-controller.kind Install as DaemonSet
+  kind: DaemonSet
+  ## @param nginx-ingress-controller.daemonset.useHostPort If `kind` is `DaemonSet`, this will enable `hostPort` for `TCP/80` and `TCP/443`
+  daemonset:
+    useHostPort: true
