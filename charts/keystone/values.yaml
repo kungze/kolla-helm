@@ -1,0 +1,42 @@
+openstackDepRelease: "openstack-dependency"
+passwordRelease: "openstack-password"
+
+openstackTag: "yoga"
+
+imageRegistry: "registry.aliyuncs.com"
+imageNamespace: "kolla-helm"
+
+pullPolicy: "IfNotPresent"
+
+cluster_domain_suffix: cluster.local
+region_name: RegionOne
+admin_username: admin
+admin_project_name: admin
+admin_user_domain_name: default
+admin_project_domain_name: default
+admin_default_domain_id: default
+
+
+
+## @param replicaCount Number of keystone replicas to deploy (requires ReadWriteMany PVC support)
+replicaCount: 1
+## @param serviceAccountName ServiceAccount name
+serviceAccountName: keystone
+
+enableLivenessProbe: true
+enableReadinessProbe: true
+
+
+
+keystone_provider: fernet
+keystone_expiration: 86400
+keystone_allow_expired_window: 172800
+
+
+fernet_rotate_cron: "* */12 * * *"
+
+
+
+## @skip database
+db_username: keystone
+db_database: keystone

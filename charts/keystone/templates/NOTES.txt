@@ -1,0 +1,17 @@
+CHART NAME: {{ .Chart.Name }}
+CHART VERSION: {{ .Chart.Version }}
+
+** 请耐心等待 chart 部署完成 **
+
+你可以通过 openstack cli 访问 keystone 服务
+
+设置环境变量
+
+    {{ include "common.utils.secret.getvalue" (dict "secret" .Release.Name "field" "OS_USERNAME" "context" $) }}
+    {{ include "common.utils.secret.getvalue" (dict "secret" .Release.Name "field" "OS_PROJECT_DOMAIN_NAME" "context" $) }}
+    {{ include "common.utils.secret.getvalue" (dict "secret" .Release.Name "field" "OS_USER_DOMAIN_NAME" "context" $) }}
+    {{ include "common.utils.secret.getvalue" (dict "secret" .Release.Name "field" "OS_PROJECT_NAME" "context" $) }}
+    {{ include "common.utils.secret.getvalue" (dict "secret" .Release.Name "field" "OS_REGION_NAME" "context" $) }}
+    {{ include "common.utils.secret.getvalue" (dict "secret" .Release.Name "field" "OS_IDENTITY_API_VERSION" "context" $) }}
+    export OS_PASSWORD=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.data.keystone-admin-password}" secrets {{ .Values.passwordRelease}} | base64 --decode)
+    export OS_AUTH_URL={{ include "keystone.cluster.endpoint" . }}
