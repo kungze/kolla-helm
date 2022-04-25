@@ -1,0 +1,15 @@
+{{- define "metadata.annotations.job.cm_render" }}
+{{- end }}
+
+{{- define "keystone.render.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: CONF_FILE_NAME
+    value: keystone.conf
+{{- end -}}
+
+{{- $envAll := index . -}}
+{{- $podEnvVars := tuple . | include "keystone.render.podEnvVars" | toString | fromYaml }}
+{{- $dependencyJobs := list "keystone-update-openstack-conn-info" -}}
+{{- $cmRenderJob := dict "envAll" . "serviceName" "keystone" "dependencyJobs" $dependencyJobs "podEnvVars" $podEnvVars.env -}}
+{{ $cmRenderJob | include "common.manifests.job_cm_render" }}

@@ -1,0 +1,22 @@
+{{- $envAll := . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keystone-etc
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  kolla-toolbox-sudoer: |
+    ansible ALL=(ALL) NOPASSWD: ALL
+  keystone.conf: |
+{{ tuple "conf/_keystone.conf.tpl" . | include "common.utils.template" | indent 4 }}
+  wsgi-keystone.conf: |
+{{ tuple "conf/_wsgi_keystone.conf.tpl" . | include "common.utils.template" | indent 4 }}
+  keystone-api.json: |
+{{ tuple "conf/_keystone.json.tpl" . | include "common.utils.template" | indent 4 }}
+  db-sync.json: |
+{{ tuple "conf/_keystone_db_sync.json.tpl" . | include "common.utils.template" | indent 4 }}
+  keystone-fernet-setup.json: |
+{{ tuple "conf/_keystone_fernet_setup.json.tpl" . | include "common.utils.template" | indent 4 }}
+  keystone-bootstrap.json: |
+{{ tuple "conf/_keystone_bootstrap.json.tpl" . | include "common.utils.template" | indent 4 }}

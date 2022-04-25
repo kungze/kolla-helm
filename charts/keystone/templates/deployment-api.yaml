@@ -1,0 +1,136 @@
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: keystone-api
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: keystone
+    spec:
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: PATH
+            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+          - name: DEPENDENCY_JOBS
+            value: "keystone-fernet-setup,keystone-bootstrap"
+      containers:
+        - name: keystone-api
+          image: {{ include "keystone.image" . | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          {{- if .Values.enableLivenessProbe }}
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /v3/
+              port: 5000
+              scheme: HTTP
+            initialDelaySeconds: 50
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
+          {{- if .Values.enableReadinessProbe }}
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /v3/
+              port: 5000
+              scheme: HTTP
+            initialDelaySeconds: 50
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+          env:
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "keystone"
+            - name: PATH
+              value: "/var/lib/kolla/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            - name: LANG
+              value: "en_US.UTF-8"
+            - name: KOLLA_BASE_DISTRO
+              value: "ubuntu"
+            - name: KOLLA_DISTRO_PYTHON_VERSION
+              value: "3.8"
+            - name: KOLLA_BASE_ARCH
+              value: "x86_64"
+            - name: SETUPTOOLS_USE_DISTUTILS
+              value: "stdlib"
+            - name: PS1
+              value: "$(tput bold)($(printenv KOLLA_SERVICE_NAME))$(tput sgr0)[$(id -un)@$(hostname -s) $(pwd)]$ "
+            - name: DEBIAN_FRONTEND
+              value: "noninteractive"
+            - name: KEYSTONE_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: keystone-database-password
+                  name: {{ .Values.passwordRelease }}
+          ports:
+            - name: keystone-api
+              containerPort: 5000
+              protocol: TCP
+          volumeMounts:
+          - mountPath: /var/log/kolla/keystone
+            name: kollalog
+            mountPropagation: "HostToContainer"
+          - mountPath: /var/lib/kolla/config_files/keystone-startup.sh
+            name: keystone-bin
+            subPath: keystone-startup.sh
+          - mountPath: /var/lib/kolla/config_files/keystone.conf
+            name: keystone-etc
+            subPath: keystone.conf
+          - mountPath: /var/lib/kolla/config_files/config.json
+            name: keystone-etc
+            subPath: keystone-api.json
+          - mountPath: /var/lib/kolla/config_files/wsgi-keystone.conf
+            name: keystone-etc
+            subPath: wsgi-keystone.conf
+          - mountPath: /etc/keystone/fernet-keys/
+            name: keystone-fernet-keys
+      serviceAccount: {{ .Values.serviceAccountName}}
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      volumes:
+      - hostPath:
+          path: /var/log/kolla/keystone
+          type: DirectoryOrCreate
+        name: kollalog
+      - configMap:
+          defaultMode: 420
+          name: keystone-etc
+        name: keystone-etc
+      - configMap:
+          defaultMode: 493
+          name: keystone-bin
+        name: keystone-bin
+      - name: keystone-fernet-keys
+        secret:
+          defaultMode: 420
+          secretName: keystone-fernet-keys

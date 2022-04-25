@@ -1,0 +1,122 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keystone-bootstrap
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: keystone-bootstrap
+          image: {{ include "keystone.image" . | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "keystone-bootstrap"
+            - name: PATH
+              value: "/var/lib/kolla/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            - name: LANG
+              value: "en_US.UTF-8"
+            - name: KOLLA_BASE_DISTRO
+              value: "ubuntu"
+            - name: KOLLA_DISTRO_PYTHON_VERSION
+              value: "3.8"
+            - name: KOLLA_BASE_ARCH
+              value: "x86_64"
+            - name: SETUPTOOLS_USE_DISTUTILS
+              value: "stdlib"
+            - name: PS1
+              value: "$(tput bold)($(printenv KOLLA_SERVICE_NAME))$(tput sgr0)[$(id -un)@$(hostname -s) $(pwd)]$ "
+            - name: DEBIAN_FRONTEND
+              value: "noninteractive"
+            - name: OS_BOOTSTRAP_ADMIN_URL
+              value: {{ include "keystone.cluster.endpoint" . }}
+            - name: OS_BOOTSTRAP_INTERNAL_URL
+              value: {{ include "keystone.cluster.endpoint" . }}
+            - name: OS_BOOTSTRAP_PUBLIC_URL
+              value: {{ include "keystone.cluster.endpoint" . }}
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: OS_USERNAME
+                  name: {{ .Release.Name }}
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: keystone-admin-password
+                  name: {{ .Values.passwordRelease }}
+            - name: OS_PROJECT_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: OS_PROJECT_NAME
+                  name: {{ .Release.Name }}
+            - name: OS_REGION_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: OS_REGION_NAME
+                  name: {{ .Release.Name }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: pod-tmp
+            - mountPath: /var/lib/kolla/config_files
+              name: configdir
+            - mountPath: /etc/keystone/fernet-keys/
+              name: keystone-fernet-keys
+            - mountPath: /var/log/kolla/keystone
+              name: keystonelog
+            - mountPath: /var/lib/kolla/config_files/keystone.conf
+              name: keystone-etc
+              subPath: keystone.conf
+            - mountPath: /var/lib/kolla/config_files/config.json
+              name: keystone-etc
+              readOnly: true
+              subPath: keystone-bootstrap.json
+            - mountPath: /tmp/bootstrap.sh
+              name: keystone-bin
+              subPath: bootstrap.sh
+      initContainers:
+        - name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command:
+            - kubernetes-entrypoint
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_JOBS
+              value: keystone-db-sync
+      restartPolicy: OnFailure
+      serviceAccount: {{ .Values.serviceAccountName}}
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      volumes:
+        - emptyDir: {}
+          name: pod-tmp
+        - emptyDir: {}
+          name: configdir
+        - emptyDir: {}
+          name: keystonelog
+        - configMap:
+            defaultMode: 420
+            name: keystone-etc
+          name: keystone-etc
+        - configMap:
+            defaultMode: 493
+            name: keystone-bin
+          name: keystone-bin
+        - name: keystone-fernet-keys
+          secret:
+            defaultMode: 420
+            secretName: keystone-fernet-keys
