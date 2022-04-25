@@ -1,0 +1,86 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: keystone-fernet-rotate
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  schedule: {{ .Values.fernetRotateCron | quote }}
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: keystone-fernet-rotate
+              image: {{ include "keystone.image" . | quote }}
+              imagePullPolicy: {{ .Values.pullPolicy | quote }}
+              env:
+                - name: KUBERNETES_NAMESPACE
+                  value: {{ .Release.Namespace | quote }}
+                - name: KEYSTONE_KEYS_REPOSITORY
+                  value: /etc/keystone/fernet-keys/
+                - name: KEYSTONE_USER
+                  value: keystone
+                - name: KEYSTONE_GROUP
+                  value: keystone
+              command:
+                - /bin/sh
+                - -c
+                - python3 /tmp/fernet-manage.py fernet_rotate
+              volumeMounts:
+                - name: keystone-bin
+                  mountPath: /tmp/fernet-manage.py
+                  subPath: fernet-manage.py
+                  readOnly: true
+                - name: keystone-etc
+                  subPath: keystone.conf
+                  mountPath: /etc/keystone/keystone.conf
+                - name: kollalog
+                  mountPath: /var/log/kolla/keystone
+                  mountPropagation: "HostToContainer"
+          initContainers:
+            - command:
+              - kubernetes-entrypoint
+              name: init
+              image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+              imagePullPolicy: {{ .Values.pullPolicy | quote }}
+              env:
+              - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.name
+              - name: NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+              - name: INTERFACE_NAME
+                value: eth0
+              - name: PATH
+                value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+              - name: DEPENDENCY_JOBS
+                value: keystone-fernet-setup
+              - name: DEPENDENCY_DAEMONSET
+              - name: DEPENDENCY_CONTAINER
+              - name: DEPENDENCY_POD_JSON
+              - name: DEPENDENCY_CUSTOM_RESOURCE
+          restartPolicy: OnFailure
+          serviceAccount: {{ .Values.serviceAccountName}}
+          serviceAccountName: {{ .Values.serviceAccountName}}
+          volumes:
+            - name: kollalog
+              hostPath:
+                path: /var/log/kolla/keystone
+                type: DirectoryOrCreate
+            - name: keystone-bin
+              configMap:
+                name: keystone-bin
+                defaultMode: 493
+            - name: keystone-etc
+              configMap:
+                defaultMode: 420
+                name: keystone-etc
+

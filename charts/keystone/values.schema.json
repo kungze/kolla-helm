@@ -1,0 +1,193 @@
+{
+    "title": "Chart Values",
+    "type": "object",
+    "properties": {
+        "openstackDepRelease": {
+            "form": true,
+            "type": "string",
+            "description": "The release name of openstack-dep chart",
+            "title": "Openstack-dep Release",
+            "default": "openstack-dependency"
+        },
+        "passwordRelease": {
+            "form": true,
+            "type": "string",
+            "description": "The release name of password chart",
+            "title": "Password Release",
+            "default": "openstack-password"
+        },
+        "imageRegistry": {
+            "form": true,
+            "type": "string",
+            "description": "The registry address of openstack kolla image",
+            "title": "Image Registry",
+            "default": "registry.aliyuncs.com"
+        },
+        "imageNamespace": {
+            "form": true,
+            "type": "string",
+            "description": "The registry namespace of openstack kolla image",
+            "title": "Image Namespace",
+            "default": "kolla-helm"
+        },
+        "openstackTag": {
+            "form": true,
+            "type": "string",
+            "description": "The openstack version",
+            "title": "Openstack version",
+            "default": "yoga"
+        },
+        "pullPolicy": {
+            "form": true,
+            "type": "string",
+            "description": "The image pull policy",
+            "title": "Pull Policy",
+            "default": "IfNotPresent"
+        },
+        "keystone_provider": {
+            "form": true,
+            "type": "string",
+            "description": "The keystone token provider",
+            "title": "Keystone Token Provider",
+            "default": "fernet"
+        },
+        "keystone_expiration": {
+            "form": true,
+            "type": "number",
+            "description": "The keystone token expiration",
+            "title": "Keystone Token expiration",
+            "default": 86400
+        },
+        "keystone_allow_expired_window": {
+            "form": true,
+            "type": "number",
+            "description": "The keystone allow expired window",
+            "title": "Allow Expired Window",
+            "default": 172800
+        },
+        "db_database": {
+            "form": true,
+            "type": "string",
+            "description": "The keystone database name",
+            "title": "Keystone database",
+            "default": "keystone"
+        },
+        "db_username": {
+            "form": true,
+            "type": "string",
+            "description": "The keystone database user name",
+            "title": "Keystone Database User",
+            "default": "keystone"
+        },
+        "cluster_domain_suffix": {
+            "form": true,
+            "type": "string",
+            "description": "The domain suffix of the current cluser",
+            "title": "Cluster Domain Suffix",
+            "default": "cluster.local"
+        },
+        "region_name": {
+            "form": true,
+            "type": "string",
+            "description": "The openstack region name",
+            "title": "Region Name",
+            "default": "RegionOne"
+        },
+        "admin_username": {
+            "form": true,
+            "type": "string",
+            "description": "The openstack admin user name",
+            "title": "Admin Username",
+            "default": "admin"
+        },
+        "admin_project_name": {
+            "form": true,
+            "type": "string",
+            "description": "The openstack admin project name",
+            "title": "Admin Project Name",
+            "default": "admin"
+        },
+        "admin_user_domain_name": {
+            "form": true,
+            "type": "string",
+            "description": "The domain name of admin user",
+            "title": "Admin User Domain",
+            "default": "default"
+        },
+        "admin_project_domain_name": {
+            "form": true,
+            "type": "string",
+            "description": "The openstack project domain name",
+            "title": "Admin Project Domain",
+            "default": "default"
+        },
+        "admin_domain_id": {
+            "form": true,
+            "type": "string",
+            "description": "The openstack admin domain id",
+            "title": "Admin Domain Id",
+            "default": "default"
+        },
+        "replicaCount": {
+            "form": true,
+            "type": "number",
+            "description": "Number of keystone replicas to deploy",
+            "title": "Replica Number",
+            "default": 1
+        },
+        "serviceAccountName": {
+            "form": true,
+            "type": "string",
+            "description": "The k8s ServiceAccount name used by this chart",
+            "title": "ServiceAccount name",
+            "default": "keystone"
+        },
+        "enableLivenessProbe": {
+            "form": true,
+            "type": "boolean",
+            "description": "Whether or not enable liveness probe",
+            "title": "Enable Liveness Probe",
+            "default": true
+        },
+        "enableReadinessProbe": {
+            "form": true,
+            "type": "boolean",
+            "description": "Whether or not enable readiness probe",
+            "title": "Enable Readliness Probe",
+            "default": true
+        },
+        "fernetRotateCron": {
+            "form": true,
+            "type": "string",
+            "description": "The keystone fernet token scheduler cron",
+            "title": "Fernet Rotate Cron",
+            "default": "* */12 * * *"
+        },
+        "ingress": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not create ingress for keystone service",
+                    "title": "Ingress",
+                    "default": true
+                },
+                "ingressClass": {
+                    "form": true,
+                    "type": "string",
+                    "description": "Ingress Class Name",
+                    "title": "Ingress Class",
+                    "default": "openstack-nginx"
+                },
+                "path": {
+                    "form": true,
+                    "type": "string",
+                    "description": "Ingress will match the path prefix, and forward the matched request to keystone service",
+                    "title": "Path Prefix",
+                    "default": "identity"
+                }
+            }
+        }
+    }
+}

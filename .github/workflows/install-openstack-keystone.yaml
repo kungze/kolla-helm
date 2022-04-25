@@ -1,0 +1,43 @@
+name: Install keystone chart
+
+on:
+  pull_request:
+    paths:
+      - 'charts/keystone/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.2.1
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
+
+      - name: Create k8s namespace
+        run:
+          kubectl create namespace openstack-keystone
+
+      - name: Install password chart
+        run:
+          helm install openstack-password charts/password --namespace openstack-keystone
+
+      - name: Install openstack-dep chart
+        run: |
+          helm dependency build charts/openstack-dep
+          helm install openstack-dependency charts/openstack-dep --namespace openstack-keystone --wait
+
+      - name: Copy common chart to keystone
+        run: |
+          mkdir -p charts/keystone/charts
+          cp charts/common charts/keystone/charts/ -rf
+
+      - name: Run chart-testing (install)
+        run: ct install --namespace openstack-keystone --target-branch main --charts charts/keystone --debug --helm-extra-args "--timeout 600s"

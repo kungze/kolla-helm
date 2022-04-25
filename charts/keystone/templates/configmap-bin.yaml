@@ -1,0 +1,24 @@
+{{- $envAll := . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keystone-bin
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  db-init.sh: |
+{{- include "common.scripts.db_init" . | indent 4 }}
+  db-sync.sh: |
+{{- include "common.scripts.db_sync" . | indent 4 }}
+  ks-register-services.sh: |
+{{- include "common.scripts.ks_register_services" . | indent 4  }}
+  keystone-startup.sh: |-
+{{ tuple "bin/_keystone_startup.sh.tpl" . | include "common.utils.template" |indent 4 }}
+  bootstrap.sh: |
+{{ tuple "bin/_bootstrap.sh.tpl" . | include "common.utils.template" |indent 4 }}
+  fernet-manage.py: |
+{{ tuple "bin/_keystone_fernet_manage.py.tpl" . | include "common.utils.template" |indent 4 }}
+  configmap-render.py: |
+{{- include "common.scripts.configmap_render" . | indent 4 }}
+  update-openstack-conn-info.py: |
+{{- include "common.scripts.update_openstack_conn_info" . | indent 4  }}

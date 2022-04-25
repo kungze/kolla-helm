@@ -1,0 +1,7 @@
+{{- define "metadata.annotations.job.db_init" }}
+{{- end }}
+
+{{- $envAll := index . -}}
+{{- $dependencyJobs := list "keystone-cm-render" -}}
+{{- $dbInitJob := dict "envAll" . "serviceName" "keystone" "dependencyJobs" $dependencyJobs -}}
+{{- include "common.manifests.job_db_init" $dbInitJob }}

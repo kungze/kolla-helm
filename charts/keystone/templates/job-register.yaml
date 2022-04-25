@@ -1,0 +1,45 @@
+{{- define "keystone.register.podCommands" -}}
+command:
+  - /bin/sh
+  - -c
+  - /tmp/ks-register-services.sh
+{{- end }}
+
+{{- define "keystone.register.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: SERVICE_NAME
+    value: keystone
+  - name: SERVICE_TYPE
+    value: identity
+  - name: ADMIN_URL
+    valueFrom:
+      secretKeyRef:
+        key: KEYSTONE_ADMIN_ENDPOINT
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+  - name: INTERNAL_URL
+    valueFrom:
+      secretKeyRef:
+        key: KEYSTONE_INTERNAL_ENDPOINT
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+  - name: INGRESS_URI
+    valueFrom:
+      secretKeyRef:
+        key: INGRESS_URI
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+{{- end }}
+
+{{- define "keystone.register.podVolMounts" -}}
+volumeMounts:
+  - name: keystone-bin
+    mountPath: /tmp/ks-register-services.sh
+    subPath: ks-register-services.sh
+{{- end }}
+
+{{- $envAll := index . -}}
+{{- $podCommands := tuple . | include "keystone.register.podCommands" | toString | fromYaml }}
+{{- $podEnvVars := tuple . | include "keystone.register.podEnvVars" | toString | fromYaml }}
+{{- $podVolMounts := tuple . | include "keystone.register.podVolMounts" | toString | fromYaml }}
+{{- $dependencyJobs := list .Release.Name -}}
+{{- $registerJob := dict "envAll" . "serviceName" "keystone" "dependencyJobs" $dependencyJobs "podCommands" $podCommands.command "podEnvVars" $podEnvVars.env "podVolMounts" $podVolMounts.volumeMounts -}}
+{{ $registerJob | include "common.manifests.job_register" }}

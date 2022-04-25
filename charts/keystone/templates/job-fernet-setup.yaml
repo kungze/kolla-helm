@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keystone-fernet-setup
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: keystone-fernet-setup
+          image: {{ include "keystone.image" . | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - python3 /tmp/fernet-manage.py fernet_setup
+          env:
+            - name: KEYSTONE_USER
+              value: keystone
+            - name: KEYSTONE_GROUP
+              value: keystone
+            - name: KUBERNETES_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: KEYSTONE_KEYS_REPOSITORY
+              value: /etc/keystone/fernet-keys/
+          volumeMounts:
+            - mountPath: /tmp
+              name: pod-tmp
+            - mountPath: /var/log/kolla/keystone
+              name: keystonelog
+            - mountPath: /var/lib/kolla/config_files/config.json
+              name: keystone-etc
+              subPath: keystone-fernet-setup.json
+            - mountPath: /etc/keystone/fernet-keys/
+              name: fernet-keys
+            - mountPath: /tmp/fernet-manage.py
+              name: keystone-bin
+              subPath: fernet-manage.py
+      restartPolicy: OnFailure
+      serviceAccount: {{ .Values.serviceAccountName}}
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      volumes:
+      - emptyDir: {}
+        name: pod-tmp
+      - emptyDir: {}
+        name: keystonelog
+      - emptyDir: {}
+        name: fernet-keys
+      - configMap:
+          defaultMode: 365
+          name: keystone-etc
+        name: keystone-etc
+      - configMap:
+          defaultMode: 493
+          name: keystone-bin
+        name: keystone-bin

@@ -1,0 +1,14 @@
+{{- define "keystone.sync_db.volumeMounts" -}}
+{{- $envAll := index . 0 -}}
+volumeMounts:
+  - name: keystone-etc
+    mountPath: /var/lib/kolla/config_files/keystone.conf
+    subPath: keystone.conf
+{{- end }}
+
+{{- $local := dict "podVolMounts" false -}}
+{{- $envAll := index . -}}
+{{- $_ := set $local "podVolMounts" ( index ( tuple . | include "keystone.sync_db.volumeMounts" | toString | fromYaml ) "volumeMounts" ) }}
+{{- $dependencyJobs := list "keystone-db-init" -}}
+{{- $dbSyncJob := dict "envAll" . "serviceName" "keystone" "dependencyJobs" $dependencyJobs "podVolMounts" $local.podVolMounts -}}
+{{ $dbSyncJob | include "common.manifests.job_db_sync" }}
