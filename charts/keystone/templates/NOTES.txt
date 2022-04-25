@@ -1,0 +1,35 @@
+{{/*
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+
+
+CHART NAME: {{ .Chart.Name }}
+CHART VERSION: {{ .Chart.Version }}
+
+** Please be patient while the chart is being deployed **
+
+Create a `openstackrc` file, and write the below lines to the file:
+
+  export OS_USERNAME=$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }} -o jsonpath="{.data.OS_USERNAME}" | base64 --decode)
+  export OS_PROJECT_DOMAIN_NAME=$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }} -o jsonpath="{.data.OS_PROJECT_DOMAIN_NAME}" | base64 --decode)
+  export OS_USER_DOMAIN_NAME=$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }} -o jsonpath="{.data.OS_USER_DOMAIN_NAME}" | base64 --decode)
+  export OS_PROJECT_NAME=$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }} -o jsonpath="{.data.OS_PROJECT_NAME}" | base64 --decode)
+  export OS_REGION_NAME=$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }} -o jsonpath="{.data.OS_REGION_NAME}" | base64 --decode)
+  export OS_PASSWORD=$(kubectl get secrets -n {{ .Release.Namespace }} {{ .Values.passwordRelease }} -o jsonpath="{.data.keystone-admin-password}" | base64 --decode)
+  export OS_AUTH_URL={{ include "keystone.cluster.endpoint" . }}
+
+Verify:
+
+  sudo apt install python3-openstackclient
+  source openstackrc
+  openstack endpoint list

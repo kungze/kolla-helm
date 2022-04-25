@@ -1,0 +1,67 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+## @section Dependency Parameters
+## @param openstackDepRelease [t#Openstack-dep Release] The release name of openstack-dep chart
+openstackDepRelease: "openstack-dependency"
+## @param passwordRelease [t#Password Release] The release name of password chart
+passwordRelease: "openstack-password"
+
+## @section Image Parameters
+## @param imageRegistry [t#Image Registry] The registry address of openstack kolla image
+imageRegistry: "registry.aliyuncs.com"
+## @param imageNamespace [t#Image Namespace] The registry namespace of openstack kolla image
+imageNamespace: "kolla-helm"
+## @param openstackTag [t#Openstack version] The openstack version
+openstackTag: "yoga"
+## @param pullPolicy [t#Pull Policy] The image pull policy
+pullPolicy: "IfNotPresent"
+
+## @section Keystone Config Parameters
+## @param keystone_provider [t#Keystone Token Provider] The keystone token provider
+keystone_provider: fernet
+## @param keystone_expiration [t#Keystone Token expiration] The keystone token expiration
+keystone_expiration: 86400
+## @param keystone_allow_expired_window [t#Allow Expired Window] The keystone allow expired window
+keystone_allow_expired_window: 172800
+## @param db_database [t#Keystone database] The keystone database name
+db_database: keystone
+## @param db_username [t#Keystone Database User] The keystone database user name
+db_username: keystone
+
+## @section Admin Auth Parameters
+## @param cluster_domain_suffix [t#Cluster Domain Suffix] The domain suffix of the current cluser
+cluster_domain_suffix: cluster.local
+## @param region_name [t#Region Name] The openstack region name
+region_name: RegionOne
+## @param admin_username [t#Admin Username] The openstack admin user name
+admin_username: admin
+## @param admin_project_name [t#Admin Project Name] The openstack admin project name
+admin_project_name: admin
+## @param admin_user_domain_name [t#Admin User Domain] The domain name of admin user
+admin_user_domain_name: default
+## @param admin_project_domain_name [t#Admin Project Domain] The openstack project domain name
+admin_project_domain_name: default
+## @param admin_domain_id [t#Admin Domain Id] The openstack admin domain id
+admin_domain_id: default
+
+## @section Deploy Parameters
+## @param replicaCount [t#Replica Number] Number of keystone replicas to deploy
+replicaCount: 1
+## @param serviceAccountName [t#ServiceAccount name] The k8s ServiceAccount name used by this chart
+serviceAccountName: keystone
+## @param enableLivenessProbe [t#Enable Liveness Probe] Whether or not enable liveness probe
+enableLivenessProbe: true
+## @param enableReadinessProbe [t#Enable Readliness Probe] Whether or not enable readiness probe
+enableReadinessProbe: true
+## @param fernetRotateCron [t#Fernet Rotate Cron] The keystone fernet token scheduler cron
+fernetRotateCron: "* */12 * * *"
