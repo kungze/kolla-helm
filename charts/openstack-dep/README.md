@@ -2,8 +2,9 @@
 
 This chart will install [mariadb][mariadb], [rabbitmq][rabbitmq],
 [memcached][memcached], [nginx-ingress-controller][nginx-ingress-controller] etc,
-these are the dependency services of openstack projects. We wish all of openstack projects
-can share same dependency services release, so this chart should be installed before install any
+these are the dependency services of openstack projects. We wish that all of openstack projects
+can share same dependency services release, so we don't straightforward declare dependency
+relationship in openstack project charts. But, this chart should be installed before install any
 openstack projects.
 
 ## TL;DR
@@ -23,9 +24,10 @@ release's name, like below:
 ```yaml
 apiVersion: v1
 data:
-  database: b3BlbnN0YWNrLWRlcGVuZGVuY3ktbWFyaWFkYi50ZXN0LW9wZW5zdGFjay5zdmMuY2x1c3Rlci5sb2NhbDozMzA2
-  memcache: b3BlbnN0YWNrLWRlcGVuZGVuY3ktbWVtY2FjaGVkLnRlc3Qtb3BlbnN0YWNrLnN2Yy5jbHVzdGVyLmxvY2FsOjExMjEx
-  rabbitmq: b3BlbnN0YWNrLWRlcGVuZGVuY3ktcmFiYml0bXEudGVzdC1vcGVuc3RhY2suc3ZjLmNsdXN0ZXIubG9jYWw6NTY3Mg==
+  DATABASE: b3BlbnN0YWNrLWRlcGVuZGVuY3ktbWFyaWFkYi50ZXN0LW9wZW5zdGFjay5zdmMuY2x1c3Rlci5sb2NhbDozMzA2
+  INGRESS_URI: aHR0cDovL29wZW5zdGFjay50ZXNzby5zdmMuY2x1c3Rlci5sb2NhbA==
+  MEMCACHE: b3BlbnN0YWNrLWRlcGVuZGVuY3ktbWVtY2FjaGVkLnRlc3Qtb3BlbnN0YWNrLnN2Yy5jbHVzdGVyLmxvY2FsOjExMjEx
+  RABBITMQ: b3BlbnN0YWNrLWRlcGVuZGVuY3ktcmFiYml0bXEudGVzdC1vcGVuc3RhY2suc3ZjLmNsdXN0ZXIubG9jYWw6NTY3Mg==
 kind: Secret
 metadata:
   annotations:
@@ -50,29 +52,44 @@ type: Opaque
 | `clusterDomainSuffix` | Cluser domain suffix | The domain suffix of of the current k8s cluser | `cluster.local` |
 
 
+### Ingress parameters
+
+| Name                                    | Form title               | Description                                                                                                              | Value       |
+| --------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ----------- |
+| `nginx-ingress-controller.enabled`      | Nginx Ingress Controller | Whether or not deploy nginx-ingress-controller                                                                           | `true`      |
+| `nginx-ingress-controller.replicaCount` | Replica Number           | Number of nginx-ingress-controller replicas                                                                              | `1`         |
+| `externalService.enabled`               | Ingress Service          | Whether or not create service for nginx ingress backend                                                                  | `true`      |
+| `externalService.name`                  | Ingress Service Name     | The nginx ingress controller k8s service name                                                                            | `openstack` |
+| `externalService.type`                  | Ingress Service Type     | The nginx ingress controller k8s service type, Support: (NodePort, LoadBalancer)                                         | `NodePort`  |
+| `externalService.port`                  | Ingress Service Port     | The nginx ingress controller k8s service port                                                                            | `80`        |
+| `externalService.loadBalancerIP`        | Ingress Service IP       | Kubernetes LoadBalancerIP to request for Controller                                                                      | `""`        |
+| `externalFQDN`                          | External FQDN            | The domain name or ip address that the user access the openstack cluster from the k8s cluster external                   | `""`        |
+| `externalUriProtocol`                   | External URI Protocol    | The protocol that the the user access the openstack cluster from the k8s cluster external. Support values: (http, https) | `http`      |
+
+
 ### Database Parameters
 
-| Name                                         | Form title             | Description                                                                                           | Value                |
-| -------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------- | -------------------- |
-| `mariadb.enabled`                            | Mariadb                | Whether or not deploy mariadb database                                                                | `true`               |
-| `mariadb.architecture`                       | Architecture           | MariaDB architecture (`standalone` or `replication`)                                                  | `standalone`         |
-| `mariadb.auth.existingSecret`                | Password chart release | Use the secret of the kolla-helm/charts/password release to provide the password for mariadb instance | `openstack-password` |
-| `mariadb.primary.persistence.storageClass`   | Primary Storage Class  | Persistent Volume storage class                                                                       | `""`                 |
-| `mariadb.primary.persistence.size`           | Primary Storage Size   | Persistent Volume size                                                                                | `8Gi`                |
-| `mariadb.secondary.replicaCount`             | Replica Number         | Number of MariaDB secondary replicas                                                                  | `1`                  |
-| `mariadb.secondary.persistence.storageClass` | Replica Storage Class  | MariaDB secondary persistent volume storage Class                                                     | `""`                 |
-| `mariadb.secondary.persistence.size`         | Replica Storage Size   | MariaDB secondary persistent volume size                                                              | `8Gi`                |
+| Name                                         | Form title            | Description                                                                                                 | Value                |
+| -------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------- |
+| `mariadb.enabled`                            | Mariadb               | Whether or not deploy mariadb database                                                                      | `true`               |
+| `mariadb.architecture`                       | Architecture          | MariaDB architecture (`standalone` or `replication`)                                                        | `standalone`         |
+| `mariadb.auth.existingSecret`                | Password Secert       | Use the secret generated by kolla-helm/charts/password release to provide the password for mariadb instance | `openstack-password` |
+| `mariadb.primary.persistence.storageClass`   | Primary Storage Class | Persistent Volume storage class                                                                             | `""`                 |
+| `mariadb.primary.persistence.size`           | Primary Storage Size  | Persistent Volume size                                                                                      | `8Gi`                |
+| `mariadb.secondary.replicaCount`             | Replica Number        | Number of MariaDB secondary replicas                                                                        | `1`                  |
+| `mariadb.secondary.persistence.storageClass` | Replica Storage Class | MariaDB secondary persistent volume storage Class                                                           | `""`                 |
+| `mariadb.secondary.persistence.size`         | Replica Storage Size  | MariaDB secondary persistent volume size                                                                    | `8Gi`                |
 
 
 ### RabbitMQ parameters
 
-| Name                                   | Form title             | Description                                                                                            | Value                |
-| -------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------ | -------------------- |
-| `rabbitmq.enabled`                     | Rabbitmq               | Whether or not deploy rabbitmq                                                                         | `true`               |
-| `rabbitmq.auth.username`               | Username               | RabbitMQ username                                                                                      | `openstack`          |
-| `rabbitmq.auth.existingPasswordSecret` | Password chart release | Use the secret of the kolla-helm/charts/password release to provide the password for rabbitmq instance | `openstack-password` |
-| `rabbitmq.persistence.storageClass`    | Storage Class          | Persistent Volume storage class                                                                        | `""`                 |
-| `rabbitmq.persistence.size`            | Storage Size           | Persistent Volume size                                                                                 | `8Gi`                |
+| Name                                   | Form title      | Description                                                                                                  | Value                |
+| -------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------ | -------------------- |
+| `rabbitmq.enabled`                     | Rabbitmq        | Whether or not deploy rabbitmq                                                                               | `true`               |
+| `rabbitmq.auth.username`               | Username        | RabbitMQ username                                                                                            | `openstack`          |
+| `rabbitmq.auth.existingPasswordSecret` | Password Secret | Use the secret generated by kolla-helm/charts/password release to provide the password for rabbitmq instance | `openstack-password` |
+| `rabbitmq.persistence.storageClass`    | Storage Class   | Persistent Volume storage class                                                                              | `""`                 |
+| `rabbitmq.persistence.size`            | Storage Size    | Persistent Volume size                                                                                       | `8Gi`                |
 
 
 ### Memcached parameters
@@ -81,16 +98,6 @@ type: Opaque
 | ------------------------ | ---------- | ------------------------------- | ------- |
 | `memcached.enabled`      | Memcached  | Whether or not deploy memcached | `true`  |
 | `memcached.service.port` |            | Memcached service port          | `11211` |
-
-
-### Nginx-ingress-controller  parameters
-
-| Name                                                   | Form title               | Description                                                                      | Value       |
-| ------------------------------------------------------ | ------------------------ | -------------------------------------------------------------------------------- | ----------- |
-| `nginx-ingress-controller.enabled`                     | Nginx-ingress-controller | Whether or not deploy nginx-ingress-controller                                   | `true`      |
-| `nginx-ingress-controller.defaultBackend.service.type` |                          | Kubernetes Service type for default backend                                      | `ClusterIP` |
-| `nginx-ingress-controller.kind`                        |                          | Install as DaemonSet                                                             | `DaemonSet` |
-| `nginx-ingress-controller.daemonset.useHostPort`       |                          | If `kind` is `DaemonSet`, this will enable `hostPort` for `TCP/80` and `TCP/443` | `true`      |
 
 
 [mariadb]: https://github.com/bitnami/charts/tree/master/bitnami/mariadb
