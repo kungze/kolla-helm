@@ -1,0 +1,21 @@
+{{- if .Values.externalService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.externalService.name | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  type: {{ .Values.externalService.type }}
+  {{- if .Values.externalService.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.externalService.loadBalancerIP | quote }}
+  {{- end }}
+  ports:
+    - name: http
+      port: {{ .Values.externalService.port }}
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: nginx-ingress-controller
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: controller
+{{- end }}

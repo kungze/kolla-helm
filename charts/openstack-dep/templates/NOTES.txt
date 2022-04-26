@@ -32,3 +32,7 @@ Get rabbitmq connection address:
 Get memcached connection address:
 
   kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }} -o jsonpath="{.data.MEMCACHE}" | base64 -d
+
+External ingress URI:
+
+  kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }} -o jsonpath="{.data.INGRESS_URI}" | base64 -d
