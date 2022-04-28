@@ -2,6 +2,18 @@ apiVersion: v1
 entries:
   common:
   - apiVersion: v2
+    created: "2022-04-28T10:12:56.856740018Z"
+    description: Openstack kolla helm common library
+    digest: 695ce8b7ead46633e37d3519c3dd0def5dfe31f44901318bf64d6751075f890f
+    home: https://github.com/kungze/kolla-helm
+    maintainers:
+    - name: Kungze
+    name: common
+    type: library
+    urls:
+    - https://github.com/kungze/kolla-helm/releases/download/common-1.0.1/common-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
     created: "2022-04-26T00:34:29.638901525Z"
     description: Openstack kolla helm common library
     digest: 6cd56daf44dc466caba2130a56e67dec423e9bb0317f927cab506b6919ecda6b
@@ -14,6 +26,21 @@ entries:
     - https://github.com/kungze/kolla-helm/releases/download/common-1.0.0/common-1.0.0.tgz
     version: 1.0.0
   keystone:
+  - apiVersion: v2
+    created: "2022-04-28T10:12:57.038882043Z"
+    dependencies:
+    - name: common
+      repository: https://kungze.github.io/kolla-helm
+      version: 1.x.x
+    description: Openstack keystone service
+    digest: 119699624e4b90e121dbdccd98edf156f52912fa898a46318f08810e3e0026c6
+    home: https://github.com/kungze/kolla-helm
+    maintainers:
+    - name: Kungze
+    name: keystone
+    urls:
+    - https://github.com/kungze/kolla-helm/releases/download/keystone-1.0.0/keystone-1.0.0.tgz
+    version: 1.0.0
   openstack-dep:
   - apiVersion: v2
     created: "2022-04-28T08:09:55.384619047Z"
@@ -83,4 +110,4 @@ entries:
     urls:
     - https://github.com/kungze/kolla-helm/releases/download/password-1.0.0/password-1.0.0.tgz
     version: 1.0.0
-generated: "2022-04-28T09:51:36.227901675Z"
+generated: "2022-04-28T10:12:57.038896942Z"
