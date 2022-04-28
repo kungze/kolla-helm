@@ -13,6 +13,7 @@ entries:
     urls:
     - https://github.com/kungze/kolla-helm/releases/download/common-1.0.0/common-1.0.0.tgz
     version: 1.0.0
+  keystone:
   openstack-dep:
   - apiVersion: v2
     created: "2022-04-28T08:09:55.384619047Z"
@@ -82,4 +83,4 @@ entries:
     urls:
     - https://github.com/kungze/kolla-helm/releases/download/password-1.0.0/password-1.0.0.tgz
     version: 1.0.0
-generated: "2022-04-28T08:09:55.384633147Z"
+generated: "2022-04-28T09:51:36.227901675Z"
