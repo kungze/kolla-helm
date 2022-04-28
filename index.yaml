@@ -15,6 +15,34 @@ entries:
     version: 1.0.0
   openstack-dep:
   - apiVersion: v2
+    created: "2022-04-28T08:09:55.384619047Z"
+    dependencies:
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.x.x
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 8.x.x
+    - condition: memcached.enabled
+      name: memcached
+      repository: https://charts.bitnami.com/bitnami
+      version: 6.x.x
+    - condition: nginx-ingress-controller.enabled
+      name: nginx-ingress-controller
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.x.x
+    description: Install openstack dependency service
+    digest: 24124856afa43ed27aa21ef5184b3a3abc0eae5a95299b786ba44b2ba0d787f6
+    home: https://github.com/kungze/kolla-helm
+    maintainers:
+    - name: Kungze
+    name: openstack-dep
+    urls:
+    - https://github.com/kungze/kolla-helm/releases/download/openstack-dep-1.0.1/openstack-dep-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
     created: "2022-04-25T08:49:37.068523028Z"
     dependencies:
     - condition: mariadb.enabled
@@ -54,4 +82,4 @@ entries:
     urls:
     - https://github.com/kungze/kolla-helm/releases/download/password-1.0.0/password-1.0.0.tgz
     version: 1.0.0
-generated: "2022-04-26T00:34:29.638910626Z"
+generated: "2022-04-28T08:09:55.384633147Z"
