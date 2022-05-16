@@ -11,12 +11,17 @@ KUBE_HOST = None
 KUBE_CERT = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 KUBE_TOKEN = None
 DB_PASSWORD = os.getenv('DB_PASSWORD', None)
+RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', None)
+OS_REGION = os.getenv('OS_REGION', None)
+KEYSTONE_ENDPOINT = os.getenv('KEYSTONE_ENDPOINT', None)
+KEYSTONE_PASSWORD = os.getenv('KEYSTONE_PASSWORD', None)
 DATABASE_ENDPOINT = os.getenv('DATABASE_ENDPOINT', None)
 RABBITMQ_ENDPOINT = os.getenv('RABBITMQ_ENDPOINT', None)
 MEMCACHE_ENDPOINT = os.getenv('MEMCACHE_ENDPOINT', None)
 CONF_FILE_NAME = os.getenv('CONF_FILE_NAME', None)
 CONFIG_MAP_NAME = os.getenv('CONFIG_MAP_NAME', None)
 AUTH_URL = os.getenv('AUTH_URL', None)
+RBD_SECRET_UUID = os.getenv('RBD_SECRET_UUID', '')
 CINDER_KEYSTONE_PASSWORD = os.getenv('CINDER_KEYSTONE_PASSWORD', None)
 
 LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
@@ -66,14 +71,24 @@ def update_connection_fields(content):
     with open(tmp.name, 'w') as f:
         f.seek(0, 0)
         for line in content.split("\n"):
+            if "keystone_password_placeholder" in line:
+                line = line.replace("keystone_password_placeholder", KEYSTONE_PASSWORD)
             if "database_password_placeholder" in line:
                 line = line.replace("database_password_placeholder", DB_PASSWORD)
+            if "rabbitmq_password_placeholder" in line:
+                line = line.replace("rabbitmq_password_placeholder", RABBITMQ_PASSWORD)
+            if "keystone_endpoint_placeholder" in line:
+                line = line.replace("keystone_endpoint_placeholder", KEYSTONE_ENDPOINT)
             if "database_endpoint_placeholder" in line:
                 line = line.replace("database_endpoint_placeholder", DATABASE_ENDPOINT)
             if "memcache_endpoint_placeholder" in line:
                 line = line.replace("memcache_endpoint_placeholder", MEMCACHE_ENDPOINT)
             if "rabbitmq_endpoint_placeholder" in line:
                 line = line.replace("rabbitmq_endpoint_placeholder", RABBITMQ_ENDPOINT)
+            if "region_placeholder" in line:
+                line = line.replace("region_placeholder", OS_REGION)
+            if "rbd_secret_uuid_palceholder" in line:
+                line = line.replace("rbd_secret_uuid_palceholder", RBD_SECRET_UUID)
             f.write(line + "\n")
             f.truncate()
 

@@ -1,21 +1,3 @@
 {{- if .Values.ingress.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ .Release.Name }}
-  namespace: {{ .Release.Namespace | quote }}
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-spec:
-  ingressClassName: {{ .Values.ingress.ingressClass }}
-  rules:
-    - http:
-        paths:
-          - path: {{ printf "/%s(/|$)(.*)" .Values.ingress.path }}
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}
-                port:
-                  number: 5000
+{{ dict "envAll" . "serviceName" "keystone" "servicePort" 5000 | include "common.manifests.ingressApi" }}
 {{- end }}

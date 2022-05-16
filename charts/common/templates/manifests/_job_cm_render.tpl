@@ -32,6 +32,11 @@ spec:
                 secretKeyRef:
                   key: {{ printf "%s-database-password" $serviceName | quote }}
                   name: {{ $envAll.Values.passwordRelease | quote }}
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: "rabbitmq-password"
+                  name: {{ $envAll.Values.passwordRelease | quote }}
             - name: DATABASE_ENDPOINT
               valueFrom:
                 secretKeyRef:
@@ -47,6 +52,23 @@ spec:
                 secretKeyRef:
                   key: MEMCACHE
                   name: {{ $envAll.Values.openstackDepRelease | quote }}
+            {{- if $envAll.Values.keystoneRelease }}
+            - name: OS_REGION
+              valueFrom:
+                secretKeyRef:
+                  key: OS_REGION_NAME
+                  name: {{ $envAll.Values.keystoneRelease | quote }}
+            - name: KEYSTONE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: {{ printf "%s-keystone-password" $serviceName | quote }}
+                  name: {{ $envAll.Values.passwordRelease | quote }}
+            - name: KEYSTONE_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  key: KEYSTONE_INTERNAL_ENDPOINT
+                  name: {{ $envAll.Values.openstackDepRelease | quote }}
+            {{- end -}}
 {{- if $podEnvVars }}
 {{ $podEnvVars | toYaml | indent 12 }}
 {{- end }}

@@ -1,7 +1,7 @@
 {{- define "common.manifests.job_register" -}}
 {{- $envAll := index . "envAll" -}}
 {{- $serviceName := index . "serviceName" -}}
-{{- $dependencyJobs := index .  "dependencyJobs" -}}
+{{- $dependencySvcs := index . "dependencySvcs" -}}
 {{- $podCommands := index . "podCommands" | default false -}}
 {{- $keystoneRelease := $envAll.Values.keystoneRelease | default $envAll.Release.Name -}}
 {{- $podEnvVars := index . "podEnvVars" | default false -}}
@@ -36,8 +36,6 @@ spec:
               value: "kolla-toolbox"
             - name: PATH
               value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            - name: LANG
-              value: "en_US.UTF-8"
             - name: KOLLA_BASE_DISTRO
               value: "ubuntu"
             - name: KOLLA_DISTRO_PYTHON_VERSION
@@ -46,8 +44,6 @@ spec:
               value: "x86_64"
             - name: SETUPTOOLS_USE_DISTUTILS
               value: "stdlib"
-            - name: PS1
-              value: "$(tput bold)($(printenv KOLLA_SERVICE_NAME))$(tput sgr0)[$(id -un)@$(hostname -s) $(pwd)]$ "
             - name: OS_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -122,7 +118,7 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_SERVICE
-              value: {{ include "common.utils.joinListWithComma" $dependencyJobs | quote }}
+              value: {{ include "common.utils.joinListWithComma" $dependencySvcs | quote }}
       restartPolicy: OnFailure
       serviceAccount: {{ $envAll.Values.serviceAccountName }}
       serviceAccountName: {{ $envAll.Values.serviceAccountName }}
