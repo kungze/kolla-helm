@@ -7,6 +7,7 @@ metadata:
 spec:
   template:
     spec:
+      activeDeadlineSeconds: 100
       containers:
         - name: keystone-bootstrap
           image: {{ include "keystone.image" . | quote }}
@@ -81,7 +82,7 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_JOBS
-              value: keystone-db-sync
+              value: keystone-db-sync,keystone-cm-render
       restartPolicy: OnFailure
       serviceAccount: {{ .Values.serviceAccountName}}
       serviceAccountName: {{ .Values.serviceAccountName}}

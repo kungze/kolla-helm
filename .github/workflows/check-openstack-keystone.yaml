@@ -1,4 +1,4 @@
-name: Install keystone chart
+name: Lint and install keystone chart
 
 on:
   pull_request:
@@ -18,8 +18,16 @@ jobs:
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.2.1
 
-      - name: Create kind cluster
-        uses: helm/kind-action@v1.2.0
+      - name: setup minikube
+        uses: manusa/actions-setup-minikube@v2.4.2
+        with:
+          minikube version: "v1.24.0"
+          kubernetes version: "v1.23.0"
+          start args: --memory 6g --cpus=2 --addons ingress --cni=flannel
+          github token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: remove read permission from kube config file
+        run: sudo chmod go-r ~/.kube/config
 
       - name: Create k8s namespace
         run:
@@ -39,5 +47,13 @@ jobs:
           mkdir -p charts/keystone/charts
           cp charts/common charts/keystone/charts/ -rf
 
+      - name: Run chart-testing (lint)
+        run: ct lint --target-branch main --charts charts/keystone --debug
+
       - name: Run chart-testing (install)
         run: ct install --namespace openstack-keystone --target-branch main --charts charts/keystone --debug --helm-extra-args "--timeout 600s"
+
+      - name: setup tmate session for debugging when event is PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 60

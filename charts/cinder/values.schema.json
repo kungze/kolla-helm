@@ -1,0 +1,56 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "keystone": {
+            "type": "object",
+            "form": true,
+            "title": "开启 Keystone",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "是否部署keystone, 如果 keystone 已经部署了设置为 false",
+                    "title": "部署 keystone",
+                    "default": true
+                }
+            }
+        },
+        "openstack-dep": {
+            "type": "object",
+            "form": true,
+            "title": "配置 openstack-dep 相关信息",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "如果已安装过keystone charts 设置为 false",
+                    "title": "安裝 openstack-dep",
+                    "default": true
+                },
+                "connInfoSecret": {
+                    "form": true,
+                    "type": "string",
+                    "title": "ConnInfo secret name",
+                    "hidden": {
+                        "value": false,
+                        "path": "openstack-dep/enabled"
+                    },
+                    "description": "openstack 依赖环境中生成服务URL得 secret 名称",
+                    "default": "openstack-conn-info"
+                },
+                "passwordSecretName": {
+                    "form": true,
+                    "type": "string",
+                    "title": "Password secret name",
+                    "hidden": {
+                        "value": false,
+                        "path": "openstack-dep/enabled"
+                    },
+                    "description": "openstack 依赖环境中自动生成服务相关密码得 secret 名称",
+                    "default": "openstack-password"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,49 @@
+name: Lint and install openstack-dep chart
+
+on:
+  pull_request:
+    paths:
+      - 'charts/openstack-dep/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.2.1
+
+      - name: setup minikube
+        uses: manusa/actions-setup-minikube@v2.4.2
+        with:
+          minikube version: "v1.24.0"
+          kubernetes version: "v1.23.0"
+          start args: --memory 6g --cpus=2 --addons ingress --cni=flannel
+          github token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: remove read permission from kube config file
+        run: sudo chmod go-r ~/.kube/config
+
+      - name: Create k8s namespace
+        run:
+          kubectl create namespace openstack-dep
+
+      - name: Install password chart
+        run:
+          helm install openstack-password charts/password --namespace openstack-dep
+
+      - name: Run chart-testing (lint)
+        run: ct lint --target-branch main --charts charts/openstack-dep --debug
+
+      - name: Run chart-testing (install)
+        run: ct install --namespace openstack-dep --target-branch main --charts charts/openstack-dep --debug
+
+      - name: setup tmate session for debugging when event is PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 60

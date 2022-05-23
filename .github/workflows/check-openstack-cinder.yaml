@@ -1,0 +1,78 @@
+name: Lint and install cinder chart
+
+on:
+  pull_request:
+    paths:
+      - 'charts/cinder/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.2.1
+
+      - name: setup minikube
+        uses: manusa/actions-setup-minikube@v2.4.2
+        with:
+          minikube version: "v1.24.0"
+          kubernetes version: "v1.23.0"
+          start args: --memory 6g --cpus=2 --addons ingress --cni=flannel
+          github token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: remove read permission from kube config file
+        run: sudo chmod go-r ~/.kube/config
+
+      - name: use local disk
+        run: tests/scripts/github-action-helper.sh use_local_disk_for_integration_test
+
+      - name: Delply rook ceph
+        run: |
+          git clone --single-branch --branch v1.9.3 https://github.com/rook/rook.git
+          kubectl apply -f rook/deploy/examples/crds.yaml
+          kubectl apply -f rook/deploy/examples/common.yaml
+          kubectl apply -f rook/deploy/examples/operator.yaml
+          kubectl apply -f rook/deploy/examples/cluster-test.yaml
+
+      - name: Create k8s namespace
+        run:
+          kubectl create namespace test-cinder
+
+      - name: Install password chart
+        run:
+          helm install openstack-password charts/password --namespace test-cinder
+
+      - name: Install openstack-dep chart
+        run: |
+          helm dependency build charts/openstack-dep
+          helm install openstack-dependency charts/openstack-dep --namespace test-cinder --wait
+
+      - name: Copy common chart to keystone
+        run: |
+          mkdir -p charts/keystone/charts
+          cp charts/common charts/keystone/charts/ -rf
+
+      - name: Install keystone chart
+        run: helm install openstack-keystone charts/keystone --namespace test-cinder --wait --timeout 600s
+
+      - name: Copy common chart to cinder
+        run: |
+          mkdir -p charts/cinder/charts
+          cp charts/common charts/cinder/charts/ -rf
+
+      - name: Run chart-testing (lint)
+        run: ct lint --target-branch main --charts charts/cinder --debug
+
+      - name: Run chart-testing (install)
+        run: ct install --namespace test-cinder --target-branch main --charts charts/cinder --debug --helm-extra-args "--timeout 600s"
+
+      - name: setup tmate session for debugging when event is PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 60

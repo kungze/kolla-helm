@@ -1,0 +1,91 @@
+{{- if .Values.ceph.backup.enabled }}
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: cinder-backup
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: cinder-backup
+    spec:
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: PATH
+            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+          - name: DEPENDENCY_SERVICE
+            value: "cinder-api"
+      containers:
+        - name: cinder-backup
+          image: {{ template "cinder.backup.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - /tmp/gen-ceph-conf.sh
+          env:
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "cinder-backup"
+          volumeMounts:
+            - mountPath: /tmp
+              name: pod-tmp
+            - mountPath: /var/lib/kolla/config_files/cinder.conf
+              name: cinder-etc
+              subPath: cinder.conf
+            - mountPath: /var/lib/kolla/config_files/config.json
+              name: cinder-etc
+              subPath: cinder-backup.json
+            - mountPath: /etc/ceph
+              name: etc-ceph
+            - mountPath: /tmp/gen-ceph-conf.sh
+              name: cinder-bin
+              subPath: gen-ceph-conf.sh
+            - mountPath: /etc/rook
+              name: mon-endpoint-volume
+      serviceAccount: {{ .Values.serviceAccountName}}
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      volumes:
+        - emptyDir: {}
+          name: pod-tmp
+        - emptyDir: {}
+          name: etc-ceph
+        - name: mon-endpoint-volume
+          configMap:
+            name: "ceph-monitor-endpoints"
+            items:
+              - key: data
+                path: mon-endpoints
+        - configMap:
+            defaultMode: 0755
+            name: cinder-bin
+          name: cinder-bin
+        - configMap:
+            defaultMode: 365
+            name: cinder-etc
+          name: cinder-etc
+{{- end }}

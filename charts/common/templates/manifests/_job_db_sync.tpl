@@ -15,6 +15,7 @@ metadata:
 spec:
   template:
     spec:
+      activeDeadlineSeconds: 100
       containers:
         - name: {{ printf "%s-%s" $serviceName "db-sync" | quote }}
           image: {{ $image | quote }}

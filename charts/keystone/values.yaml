@@ -10,6 +10,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+## @section Cluster Paramters
+## @param cluster_domain_suffix [t#Cluster Domain Suffix] The doamin suffix of the current k8s cluster
+cluster_domain_suffix: cluster.local
+
 ## @section Dependency Parameters
 ## @param openstackDepRelease [t#Openstack-dep Release] The release name of openstack-dep chart
 openstackDepRelease: "openstack-dependency"
@@ -39,8 +43,6 @@ db_database: keystone
 db_username: keystone
 
 ## @section Admin Auth Parameters
-## @param cluster_domain_suffix [t#Cluster Domain Suffix] The domain suffix of the current cluser
-cluster_domain_suffix: cluster.local
 ## @param region_name [t#Region Name] The openstack region name
 region_name: RegionOne
 ## @param admin_username [t#Admin Username] The openstack admin user name

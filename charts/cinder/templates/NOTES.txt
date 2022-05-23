@@ -1,0 +1,4 @@
+CHART NAME: {{ .Chart.Name }}
+CHART VERSION: {{ .Chart.Version }}
+
+** 请耐心等待 chart 部署完成 **

@@ -31,6 +31,7 @@ metadata:
 spec:
   template:
     spec:
+      activeDeadlineSeconds: 100
       containers:
         - name: {{ printf "sync-rook-ceph-conf-for-%s" $serviceName | quote }}
           image: {{ include "common.images.kolla-toolbox" $envAll | quote }}

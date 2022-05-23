@@ -1,7 +1,7 @@
 apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
 kind: Deployment
 metadata:
-  name: keystone-api
+  name: cinder-api
   namespace: {{ .Release.Namespace | quote }}
   labels: {{- include "common.labels.standard" . | nindent 4 }}
 spec:
@@ -11,7 +11,7 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: keystone-api
+        app.kubernetes.io/component: cinder-api
     spec:
       initContainers:
         - command:
@@ -32,20 +32,17 @@ spec:
                 fieldPath: metadata.namespace
           - name: INTERFACE_NAME
             value: eth0
-          - name: PATH
-            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
           - name: DEPENDENCY_JOBS
-            value: "keystone-fernet-setup,keystone-bootstrap"
+            value: "cinder-db-sync,cinder-register"
       containers:
-        - name: keystone-api
-          image: {{ include "keystone.image" . | quote }}
+        - name: cinder-api
+          image: {{ template "cinder.api.image" . }}
           imagePullPolicy: {{ .Values.pullPolicy }}
           {{- if .Values.enableLivenessProbe }}
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /v3/
-              port: 5000
+              port: 8776
               scheme: HTTP
             initialDelaySeconds: 50
             periodSeconds: 60
@@ -56,8 +53,7 @@ spec:
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /v3/
-              port: 5000
+              port: 8776
               scheme: HTTP
             initialDelaySeconds: 50
             periodSeconds: 60
@@ -68,50 +64,29 @@ spec:
             - name: KOLLA_CONFIG_STRATEGY
               value: "COPY_ALWAYS"
             - name: KOLLA_SERVICE_NAME
-              value: "keystone"
-            - name: KEYSTONE_DATABASE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: keystone-database-password
-                  name: {{ .Values.passwordRelease }}
+              value: "cinder-api"
           ports:
-            - name: keystone-api
-              containerPort: 5000
+            - name: cinder-api
+              containerPort: 8776
               protocol: TCP
           volumeMounts:
-          - mountPath: /var/log/kolla/keystone
-            name: kollalog
-            mountPropagation: "HostToContainer"
-          - mountPath: /var/lib/kolla/config_files/keystone-startup.sh
-            name: keystone-bin
-            subPath: keystone-startup.sh
-          - mountPath: /var/lib/kolla/config_files/keystone.conf
-            name: keystone-etc
-            subPath: keystone.conf
-          - mountPath: /var/lib/kolla/config_files/config.json
-            name: keystone-etc
-            subPath: keystone-api.json
-          - mountPath: /var/lib/kolla/config_files/wsgi-keystone.conf
-            name: keystone-etc
-            subPath: wsgi-keystone.conf
-          - mountPath: /etc/keystone/fernet-keys/
-            name: keystone-fernet-keys
+            - mountPath: /tmp
+              name: pod-tmp
+            - mountPath: /var/lib/kolla/config_files/cinder.conf
+              name: cinder-etc
+              subPath: cinder.conf
+            - mountPath: /var/lib/kolla/config_files/config.json
+              name: cinder-etc
+              subPath: cinder-api.json
+            - mountPath: /var/lib/kolla/config_files/cinder-wsgi.conf
+              name: cinder-etc
+              subPath: cinder-wsgi.conf
       serviceAccount: {{ .Values.serviceAccountName}}
       serviceAccountName: {{ .Values.serviceAccountName}}
       volumes:
-      - hostPath:
-          path: /var/log/kolla/keystone
-          type: DirectoryOrCreate
-        name: kollalog
-      - configMap:
-          defaultMode: 420
-          name: keystone-etc
-        name: keystone-etc
-      - configMap:
-          defaultMode: 493
-          name: keystone-bin
-        name: keystone-bin
-      - name: keystone-fernet-keys
-        secret:
-          defaultMode: 420
-          secretName: keystone-fernet-keys
+        - emptyDir: {}
+          name: pod-tmp
+        - configMap:
+            defaultMode: 365
+            name: cinder-etc
+          name: cinder-etc

@@ -1,0 +1,14 @@
+{{- if .Values.ceph.enabled -}}
+{{ $volumes := dict "poolName" "volumes" "readOnly" false }}
+{{ $backups := dict "poolName" "backups" "readOnly" false }}
+{{ $images := dict "poolName" "images" "readOnly" true }}
+{{- if .Values.ceph.backup.enabled -}}
+{{ $prvileges := tuple $volumes $images $backups }}
+{{ $cephClient := dict "cephClusterNamespace" .Values.ceph.cephClusterNamespace "cephUserName" .Values.ceph.cephClientName "prvileges" $prvileges }}
+{{- $cephClient | include "common.manifests.cephclient" -}}
+{{- else -}}
+{{ $prvileges := tuple $volumes $images }}
+{{ $cephClient := dict "cephClusterNamespace" .Values.ceph.cephClusterNamespace "cephUserName" .Values.ceph.cephClientName "prvileges" $prvileges }}
+{{- $cephClient | include "common.manifests.cephclient" -}}
+{{- end -}}
+{{- end -}}

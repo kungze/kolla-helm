@@ -14,6 +14,7 @@ metadata:
 spec:
   template:
     spec:
+      activeDeadlineSeconds: 100
       containers:
         - name: {{ printf "%s-%s" $serviceName "cm-render" | quote }}
           image: {{ include "common.images.kolla-toolbox" $envAll | quote }}
