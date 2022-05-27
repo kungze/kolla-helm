@@ -12,5 +12,5 @@ Return the proper Keystone image name
 Return the keystone.cluster.endpoints
 */}}
 {{- define "keystone.cluster.endpoint" -}}
-{{ printf "http://%s.%s.svc.%s:5000/v3" .Release.Name .Release.Namespace .Values.cluster_domain_suffix }}
+{{ printf "http://%s.%s.svc.%s:5000/v3" "keystone-api" .Release.Namespace .Values.cluster_domain_suffix }}
 {{- end }}

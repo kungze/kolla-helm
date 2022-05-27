@@ -9,6 +9,7 @@ volumeMounts:
 {{- $local := dict "podVolMounts" false -}}
 {{- $envAll := index . -}}
 {{- $_ := set $local "podVolMounts" ( index ( tuple . | include "keystone.sync_db.volumeMounts" | toString | fromYaml ) "volumeMounts" ) }}
-{{- $dependencyJobs := list "keystone-db-init" -}}
-{{- $dbSyncJob := dict "envAll" . "serviceName" "keystone" "dependencyJobs" $dependencyJobs "podVolMounts" $local.podVolMounts -}}
+{{- $dependencyJobs := list "keystone-db-init" "keystone-cm-render" -}}
+{{- $image := include "keystone.image" . -}}
+{{- $dbSyncJob := dict "envAll" . "serviceName" "keystone" "dependencyJobs" $dependencyJobs "podVolMounts" $local.podVolMounts "image" $image -}}
 {{ $dbSyncJob | include "common.manifests.job_db_sync" }}

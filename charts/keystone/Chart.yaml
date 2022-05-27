@@ -13,7 +13,7 @@
 apiVersion: v2
 description: Openstack keystone service
 name: keystone
-version: 1.0.0
+version: 1.0.1
 home: https://github.com/kungze/kolla-helm
 maintainers:
   - name: Kungze
