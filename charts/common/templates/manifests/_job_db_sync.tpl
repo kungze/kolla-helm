@@ -2,6 +2,7 @@
 {{- $envAll := index . "envAll" -}}
 {{- $serviceName := index . "serviceName" -}}
 {{- $dependencyJobs := index . "dependencyJobs" -}}
+{{- $image := index . "image" -}}
 {{- $podVolMounts := index . "podVolMounts" | default false -}}
 {{- $configMapBin := index . "configMapBin" | default (printf "%s-%s" $serviceName "bin" ) -}}
 {{- $configMapEtc := index . "configMapEtc" | default (printf "%s-%s" $serviceName "etc" ) -}}
@@ -14,19 +15,11 @@ metadata:
 spec:
   template:
     spec:
+      activeDeadlineSeconds: 100
       containers:
         - name: {{ printf "%s-%s" $serviceName "db-sync" | quote }}
-          image: {{ include "keystone.image" $envAll | quote }}
+          image: {{ $image | quote }}
           imagePullPolicy: {{ $envAll.Values.pullPolicy }}
-          livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - kolla_start
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            failureThreshold: 1
           env:
             - name: KOLLA_CONFIG_STRATEGY
               value: "COPY_ALWAYS"
@@ -34,22 +27,6 @@ spec:
               value: "db-sync"
             - name: KOLLA_BOOTSTRAP
               value: ""
-            - name: PATH
-              value: "/var/lib/kolla/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            - name: LANG
-              value: "en_US.UTF-8"
-            - name: KOLLA_BASE_DISTRO
-              value: "ubuntu"
-            - name: KOLLA_DISTRO_PYTHON_VERSION
-              value: "3.8"
-            - name: KOLLA_BASE_ARCH
-              value: "x86_64"
-            - name: SETUPTOOLS_USE_DISTUTILS
-              value: "stdlib"
-            - name: PS1
-              value: "$(tput bold)($(printenv KOLLA_SERVICE_NAME))$(tput sgr0)[$(id -un)@$(hostname -s) $(pwd)]$ "
-            - name: DEBIAN_FRONTEND
-              value: "noninteractive"
           volumeMounts:
             - mountPath: /tmp
               name: pod-tmp
