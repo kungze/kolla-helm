@@ -13,6 +13,7 @@ metadata:
 spec:
   template:
     spec:
+      activeDeadlineSeconds: 100
       containers:
         - name: {{ printf "%s-%s" $serviceName "db-init" | quote }}
           image: {{ include "common.images.kolla-toolbox" $envAll | quote }}
@@ -30,8 +31,6 @@ spec:
               value: "kolla-toolbox"
             - name: PATH
               value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            - name: LANG
-              value: "en_US.UTF-8"
             - name: KOLLA_BASE_DISTRO
               value: "ubuntu"
             - name: KOLLA_DISTRO_PYTHON_VERSION
@@ -40,8 +39,6 @@ spec:
               value: "x86_64"
             - name: SETUPTOOLS_USE_DISTUTILS
               value: "stdlib"
-            - name: PS1
-              value: "$(tput bold)($(printenv KOLLA_SERVICE_NAME))$(tput sgr0)[$(id -un)@$(hostname -s) $(pwd)]$ "
             - name: DB_NAME
               value: {{ $envAll.Values.db_database | quote }}
             - name: DB_USER
