@@ -1,0 +1,1 @@
+{{- dict "envAll" . "serviceName" "cinder" "servicePort" 8776 | include "common.manifests.serviceApi" }}

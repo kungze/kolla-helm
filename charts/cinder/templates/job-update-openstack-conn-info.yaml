@@ -1,0 +1,21 @@
+{{- define "cinder.connInfo.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: SECRET_ADMIN_KEY
+    value: CINDER_ADMIN_ENDPOINT
+  - name: SECRET_ADMIN_VALUES
+    value: {{ include "cinder.cluster.endpoint" $envAll | b64enc | quote }}
+  - name: SECRET_INTERNAL_KEY
+    value: CINDER_INTERNAL_ENDPOINT
+  - name: SECRET_INTERNAL_VALUES
+    value: {{ include "cinder.cluster.endpoint" $envAll | b64enc | quote }}
+  - name: SECRET_PUBLIC_KEY
+    value: CINDER_PUBLIC_ENDPOINT
+  - name: SECRET_PUBLIC_VALUES
+    value: {{ include "cinder.cluster.endpoint" $envAll | b64enc | quote }}
+{{- end -}}
+
+{{- $envAll := index . -}}
+{{- $podEnvVars := tuple . | include "cinder.connInfo.podEnvVars" | toString | fromYaml }}
+{{- $cmUpdateConnInfoJob := dict "envAll" . "serviceName" "cinder" "connInfoSecretName" $envAll.Values.openstackDepRelease "podEnvVars" $podEnvVars.env -}}
+{{ $cmUpdateConnInfoJob | include "common.manifests.job_update_conn_info" }}

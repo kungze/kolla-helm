@@ -1,0 +1,58 @@
+{{- define "cinder.register.podCommands" -}}
+command:
+  - /bin/sh
+  - -c
+  - |
+    /tmp/ks-register-services.sh
+    /tmp/ks-register-users.sh
+
+{{- end }}
+
+{{- define "cinder.register.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: SERVICE_NAME
+    value: cinderv3
+  - name: SERVICE_TYPE
+    value: volumev3
+  - name: ADMIN_URL
+    valueFrom:
+      secretKeyRef:
+        key: CINDER_ADMIN_ENDPOINT
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+  - name: INTERNAL_URL
+    valueFrom:
+      secretKeyRef:
+        key: CINDER_INTERNAL_ENDPOINT
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+  - name: USER_NAME
+    value: cinder
+  - name: USER_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: cinder-keystone-password
+        name: {{ $envAll.Values.passwordRelease | quote }}
+  - name: INGRESS_URI
+    valueFrom:
+      secretKeyRef:
+        key: INGRESS_URI
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+{{- end }}
+
+{{- define "cinder.register.podVolMounts" -}}
+volumeMounts:
+  - name: cinder-bin
+    mountPath: /tmp/ks-register-services.sh
+    subPath: ks-register-services.sh
+  - name: cinder-bin
+    mountPath: /tmp/ks-register-users.sh
+    subPath: ks-register-users.sh
+{{- end }}
+
+{{- $envAll := index . -}}
+{{- $podCommands := tuple . | include "cinder.register.podCommands" | toString | fromYaml }}
+{{- $podEnvVars := tuple . | include "cinder.register.podEnvVars" | toString | fromYaml }}
+{{- $podVolMounts := tuple . | include "cinder.register.podVolMounts" | toString | fromYaml }}
+{{- $dependencySvcs := list "keystone-api" -}}
+{{- $registerJob := dict "envAll" . "serviceName" "cinder" "dependencySvcs" $dependencySvcs "podCommands" $podCommands.command "podEnvVars" $podEnvVars.env "podVolMounts" $podVolMounts.volumeMounts -}}
+{{ $registerJob | include "common.manifests.job_register" }}

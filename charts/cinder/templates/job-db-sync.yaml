@@ -1,0 +1,15 @@
+{{- define "cinder.sync_db.volumeMounts" -}}
+{{- $envAll := index . 0 -}}
+volumeMounts:
+  - name: cinder-etc
+    mountPath: /var/lib/kolla/config_files/cinder.conf
+    subPath: cinder.conf
+{{- end }}
+
+{{- $local := dict "podVolMounts" false -}}
+{{- $envAll := index . -}}
+{{- $_ := set $local "podVolMounts" ( index ( tuple . | include "cinder.sync_db.volumeMounts" | toString | fromYaml ) "volumeMounts" ) }}
+{{- $dependencyJobs := list "cinder-db-init" "cinder-cm-render" -}}
+{{- $image := include "cinder.api.image" . -}}
+{{- $dbSyncJob := dict "envAll" . "serviceName" "cinder" "dependencyJobs" $dependencyJobs "podVolMounts" $local.podVolMounts "image" $image -}}
+{{ $dbSyncJob | include "common.manifests.job_db_sync" }}
