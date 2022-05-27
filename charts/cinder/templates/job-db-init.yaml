@@ -1,0 +1,4 @@
+{{- $envAll := index . -}}
+{{- $dependencyJobs := list "cinder-cm-render" -}}
+{{- $dbInitJob := dict "envAll" . "serviceName" "cinder" "dependencyJobs" $dependencyJobs -}}
+{{- include "common.manifests.job_db_init" $dbInitJob }}

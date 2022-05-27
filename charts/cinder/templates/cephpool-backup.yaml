@@ -1,0 +1,4 @@
+{{- if and .Values.ceph.enabled .Values.ceph.backup.enabled -}}
+{{- $cephPool := dict "poolName" .Values.ceph.backup.poolName "cephClusterNamespace" .Values.ceph.cephClusterNamespace "replicated" .Values.ceph.backup.replicatedSize "failureDomain" .Values.ceph.backup.failureDomain -}}
+{{- $cephPool | include "common.manifests.cephpool" -}}
+{{- end -}}

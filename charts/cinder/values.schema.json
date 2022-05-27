@@ -1,0 +1,290 @@
+{
+    "title": "Chart Values",
+    "type": "object",
+    "properties": {
+        "cluster_domain_suffix": {
+            "form": true,
+            "type": "string",
+            "description": "The doamin suffix of the current k8s cluster",
+            "title": "Cluster Domain Suffix",
+            "default": "cluster.local"
+        },
+        "openstackDepRelease": {
+            "form": true,
+            "type": "string",
+            "description": "The release name of openstack-dep chart",
+            "title": "Openstack-dep Release",
+            "default": "openstack-dependency"
+        },
+        "passwordRelease": {
+            "form": true,
+            "type": "string",
+            "description": "The release name of password chart",
+            "title": "Password Release",
+            "default": "openstack-password"
+        },
+        "keystoneRelease": {
+            "form": true,
+            "type": "string",
+            "description": "The release name of keystone chart",
+            "title": "keystone Release",
+            "default": "openstack-keystone"
+        },
+        "imageRegistry": {
+            "form": true,
+            "type": "string",
+            "description": "The registry address of openstack kolla image",
+            "title": "Image Registry",
+            "default": "registry.aliyuncs.com"
+        },
+        "imageNamespace": {
+            "form": true,
+            "type": "string",
+            "description": "The registry namespace of openstack kolla image",
+            "title": "Image Namespace",
+            "default": "kolla-helm"
+        },
+        "openstackTag": {
+            "form": true,
+            "type": "string",
+            "description": "The openstack version",
+            "title": "Openstack version",
+            "default": "yoga"
+        },
+        "pullPolicy": {
+            "form": true,
+            "type": "string",
+            "description": "The image pull policy",
+            "title": "Pull Policy",
+            "default": "IfNotPresent"
+        },
+        "replicaCount": {
+            "form": true,
+            "type": "number",
+            "description": "Number of cinder replicas to deploy (requires ReadWriteMany PVC support)",
+            "default": 1
+        },
+        "serviceAccountName": {
+            "form": true,
+            "type": "string",
+            "description": "ServiceAccount name",
+            "default": "cinder"
+        },
+        "enableLivenessProbe": {
+            "form": true,
+            "type": "boolean",
+            "description": "Whether or not enable liveness probe",
+            "title": "Enable Liveness Probe",
+            "default": true
+        },
+        "enableReadinessProbe": {
+            "form": true,
+            "type": "boolean",
+            "description": "Whether or not enable readiness probe",
+            "title": "Enable Readliness Probe",
+            "default": true
+        },
+        "db_database": {
+            "form": true,
+            "type": "string",
+            "description": "The keystone database name",
+            "title": "Keystone database",
+            "default": "cinder"
+        },
+        "db_username": {
+            "form": true,
+            "type": "string",
+            "description": "The keystone database user name",
+            "title": "Keystone Database User",
+            "default": "cinder"
+        },
+        "enabled_notification": {
+            "form": true,
+            "type": "boolean",
+            "description": "Whether or not enable notification",
+            "title": "Enable Notification",
+            "default": false
+        },
+        "lvm": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not enable lvm backend",
+                    "title": "Enable Lvm",
+                    "default": true
+                },
+                "vg_name": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The volume group name used to as the cinder lvm driver's backend",
+                    "title": "Volume group Name",
+                    "default": "cinder-volumes"
+                },
+                "create_loop_device": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not create a loop device for lvm backend. If this set as false, the lvm volume group must be prepared in advance.",
+                    "title": "Create Loop Device",
+                    "default": true
+                },
+                "loop_device_name": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The loop device's name",
+                    "title": " Loop Device Name",
+                    "default": "/dev/loop0"
+                },
+                "loop_device_size": {
+                    "form": true,
+                    "type": "number",
+                    "description": "The loop device's size, unit Mb",
+                    "title": "Loop Device Size",
+                    "default": 2048
+                },
+                "loop_device_directory": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The host directory save loop device file",
+                    "title": "Loop Device Directoyr",
+                    "default": "/var/lib/kolla-helm/cinder"
+                },
+                "volume_type": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The cinder volume type name corresponding with lvm backend",
+                    "title": "Cinder Volume Type",
+                    "default": "lvm1"
+                },
+                "lvm_target_helper": {
+                    "form": true,
+                    "type": "string",
+                    "description": "Target user-land tool to use",
+                    "title": "Cinder Lvm Target Helper",
+                    "default": "tgtadm"
+                }
+            }
+        },
+        "ceph": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not enable ceph backend",
+                    "title": "Enable Ceph",
+                    "default": true
+                },
+                "volume_type": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The cinder volume type name corresponding with ceph backend",
+                    "title": "Cinder Volume Type",
+                    "default": "rbd1"
+                },
+                "poolName": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The ceph pool name which used to store the cinder volumes",
+                    "title": "Pool Name",
+                    "default": "volumes"
+                },
+                "replicatedSize": {
+                    "form": true,
+                    "type": "number",
+                    "description": "For a pool based on raw copies, specify the number of copies. A size of 1 indicates no redundancy.",
+                    "title": "Pool Replicated Size",
+                    "default": 3
+                },
+                "failureDomain": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The failure domain will spread the replicas of the data across different failure zones",
+                    "title": "Pool Failure Domain",
+                    "default": "host"
+                },
+                "cephClusterNamespace": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The k8s namespace of rook cephcluster",
+                    "title": "Rook Ceph Cluster Namespace",
+                    "default": "rook-ceph"
+                },
+                "cephClusterName": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The rook cephcluster name",
+                    "title": "Rook Ceph Cluster Name",
+                    "default": "rook-ceph"
+                },
+                "cephClientName": {
+                    "form": true,
+                    "type": "string",
+                    "description": "The name of rook ceph cephclient",
+                    "title": "Rook Ceph Client Name",
+                    "default": "cinder"
+                },
+                "backup": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "form": true,
+                            "type": "boolean",
+                            "description": "Whether or not enable cinder backup feature",
+                            "title": "Enable Cinder Backup",
+                            "default": true
+                        },
+                        "poolName": {
+                            "form": true,
+                            "type": "string",
+                            "description": "The name of ceph pool used to store cinder volume backups",
+                            "title": "Backup Pool Name",
+                            "default": "backups"
+                        },
+                        "replicatedSize": {
+                            "form": true,
+                            "type": "number",
+                            "description": "For a pool based on raw copies, specify the number of copies. A size of 1 indicates no redundancy.",
+                            "title": "Pool Replicated Size",
+                            "default": 3
+                        },
+                        "failureDomain": {
+                            "form": true,
+                            "type": "string",
+                            "description": "The failure domain will spread the replicas of the data across different failure zones",
+                            "title": "Pool Failure Domain",
+                            "default": "host"
+                        }
+                    }
+                }
+            }
+        },
+        "ingress": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not create ingress for keystone service",
+                    "title": "Ingress",
+                    "default": true
+                },
+                "ingressClass": {
+                    "form": true,
+                    "type": "string",
+                    "description": "Ingress Class Name",
+                    "title": "Ingress Class",
+                    "default": "openstack-nginx"
+                },
+                "path": {
+                    "form": true,
+                    "type": "string",
+                    "description": "Ingress will match the path prefix, and forward the matched request to keystone service",
+                    "title": "Path Prefix",
+                    "default": "volumev3"
+                }
+            }
+        }
+    }
+}

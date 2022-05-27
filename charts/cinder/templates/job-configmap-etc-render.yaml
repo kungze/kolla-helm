@@ -1,0 +1,17 @@
+{{- define "cinder.render.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: CONF_FILE_NAME
+    value: cinder.conf
+  - name: RBD_SECRET_UUID
+    valueFrom:
+      secretKeyRef:
+        name: {{ $envAll.Values.passwordRelease | quote }}
+        key: "rbd-secret-uuid"
+{{- end -}}
+
+{{- $envAll := index . -}}
+{{- $podEnvVars := tuple . | include "cinder.render.podEnvVars" | toString | fromYaml }}
+{{- $dependencyJobs := list "cinder-update-openstack-conn-info" -}}
+{{- $cmRenderJob := dict "envAll" . "serviceName" "cinder" "dependencyJobs" $dependencyJobs "podEnvVars" $podEnvVars.env -}}
+{{ $cmRenderJob | include "common.manifests.job_cm_render" }}
