@@ -1,6 +1,3 @@
-{{- define "metadata.annotations.job.cm_render" }}
-{{- end }}
-
 {{- define "keystone.render.podEnvVars" -}}
 {{- $envAll := index . 0 -}}
 env:

@@ -7,6 +7,7 @@ metadata:
 spec:
   template:
     spec:
+      activeDeadlineSeconds: 100
       containers:
         - name: keystone-bootstrap
           image: {{ include "keystone.image" . | quote }}
@@ -16,22 +17,6 @@ spec:
               value: "COPY_ALWAYS"
             - name: KOLLA_SERVICE_NAME
               value: "keystone-bootstrap"
-            - name: PATH
-              value: "/var/lib/kolla/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            - name: LANG
-              value: "en_US.UTF-8"
-            - name: KOLLA_BASE_DISTRO
-              value: "ubuntu"
-            - name: KOLLA_DISTRO_PYTHON_VERSION
-              value: "3.8"
-            - name: KOLLA_BASE_ARCH
-              value: "x86_64"
-            - name: SETUPTOOLS_USE_DISTUTILS
-              value: "stdlib"
-            - name: PS1
-              value: "$(tput bold)($(printenv KOLLA_SERVICE_NAME))$(tput sgr0)[$(id -un)@$(hostname -s) $(pwd)]$ "
-            - name: DEBIAN_FRONTEND
-              value: "noninteractive"
             - name: OS_BOOTSTRAP_ADMIN_URL
               value: {{ include "keystone.cluster.endpoint" . }}
             - name: OS_BOOTSTRAP_INTERNAL_URL
@@ -97,7 +82,7 @@ spec:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
             - name: DEPENDENCY_JOBS
-              value: keystone-db-sync
+              value: keystone-db-sync,keystone-cm-render
       restartPolicy: OnFailure
       serviceAccount: {{ .Values.serviceAccountName}}
       serviceAccountName: {{ .Values.serviceAccountName}}

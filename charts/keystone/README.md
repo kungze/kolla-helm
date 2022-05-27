@@ -13,6 +13,13 @@ $ helm install openstack-keystone kolla-helm/keystone
 
 ## Parameters
 
+### Cluster Paramters
+
+| Name                    | Form title            | Description                                  | Value           |
+| ----------------------- | --------------------- | -------------------------------------------- | --------------- |
+| `cluster_domain_suffix` | Cluster Domain Suffix | The doamin suffix of the current k8s cluster | `cluster.local` |
+
+
 ### Dependency Parameters
 
 | Name                  | Form title            | Description                             | Value                  |
@@ -44,15 +51,14 @@ $ helm install openstack-keystone kolla-helm/keystone
 
 ### Admin Auth Parameters
 
-| Name                        | Form title            | Description                             | Value           |
-| --------------------------- | --------------------- | --------------------------------------- | --------------- |
-| `cluster_domain_suffix`     | Cluster Domain Suffix | The domain suffix of the current cluser | `cluster.local` |
-| `region_name`               | Region Name           | The openstack region name               | `RegionOne`     |
-| `admin_username`            | Admin Username        | The openstack admin user name           | `admin`         |
-| `admin_project_name`        | Admin Project Name    | The openstack admin project name        | `admin`         |
-| `admin_user_domain_name`    | Admin User Domain     | The domain name of admin user           | `default`       |
-| `admin_project_domain_name` | Admin Project Domain  | The openstack project domain name       | `default`       |
-| `admin_domain_id`           | Admin Domain Id       | The openstack admin domain id           | `default`       |
+| Name                        | Form title           | Description                       | Value       |
+| --------------------------- | -------------------- | --------------------------------- | ----------- |
+| `region_name`               | Region Name          | The openstack region name         | `RegionOne` |
+| `admin_username`            | Admin Username       | The openstack admin user name     | `admin`     |
+| `admin_project_name`        | Admin Project Name   | The openstack admin project name  | `admin`     |
+| `admin_user_domain_name`    | Admin User Domain    | The domain name of admin user     | `default`   |
+| `admin_project_domain_name` | Admin Project Domain | The openstack project domain name | `default`   |
+| `admin_domain_id`           | Admin Domain Id      | The openstack admin domain id     | `default`   |
 
 
 ### Deployment Parameters

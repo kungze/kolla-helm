@@ -11,7 +11,7 @@ spec:
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: keystone
+        app.kubernetes.io/component: keystone-api
     spec:
       initContainers:
         - command:
@@ -64,30 +64,11 @@ spec:
             successThreshold: 1
             timeoutSeconds: 15
           {{- end }}
-          {{- if .Values.resources }}
-          resources: {{- toYaml .Values.resources | nindent 12 }}
-          {{- end }}
           env:
             - name: KOLLA_CONFIG_STRATEGY
               value: "COPY_ALWAYS"
             - name: KOLLA_SERVICE_NAME
               value: "keystone"
-            - name: PATH
-              value: "/var/lib/kolla/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            - name: LANG
-              value: "en_US.UTF-8"
-            - name: KOLLA_BASE_DISTRO
-              value: "ubuntu"
-            - name: KOLLA_DISTRO_PYTHON_VERSION
-              value: "3.8"
-            - name: KOLLA_BASE_ARCH
-              value: "x86_64"
-            - name: SETUPTOOLS_USE_DISTUTILS
-              value: "stdlib"
-            - name: PS1
-              value: "$(tput bold)($(printenv KOLLA_SERVICE_NAME))$(tput sgr0)[$(id -un)@$(hostname -s) $(pwd)]$ "
-            - name: DEBIAN_FRONTEND
-              value: "noninteractive"
             - name: KEYSTONE_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:

@@ -2,6 +2,13 @@
     "title": "Chart Values",
     "type": "object",
     "properties": {
+        "cluster_domain_suffix": {
+            "form": true,
+            "type": "string",
+            "description": "The doamin suffix of the current k8s cluster",
+            "title": "Cluster Domain Suffix",
+            "default": "cluster.local"
+        },
         "openstackDepRelease": {
             "form": true,
             "type": "string",
@@ -78,13 +85,6 @@
             "description": "The keystone database user name",
             "title": "Keystone Database User",
             "default": "keystone"
-        },
-        "cluster_domain_suffix": {
-            "form": true,
-            "type": "string",
-            "description": "The domain suffix of the current cluser",
-            "title": "Cluster Domain Suffix",
-            "default": "cluster.local"
         },
         "region_name": {
             "form": true,
