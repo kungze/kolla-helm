@@ -30,4 +30,4 @@ jobs:
           helm install openstack-password charts/password --namespace openstack-dep
 
       - name: Run chart-testing (install)
-        run: ct install --namespace openstack-dep --target-branch main --charts charts/openstack-dep --debug
+        run: ct install --namespace openstack-dep --target-branch main --charts charts/openstack-dep --debug --helm-extra-args "--timeout 600s"
