@@ -10,7 +10,7 @@ $ helm repo add kolla-helm https://kungze.github.io/kolla-helm
 $ helm install openstack-password kolla-helm/password
 $ helm install openstack-dependency kolla-helm/openstack-dep
 $ helm install openstack-keystone kolla-helm/keystone
-$ helm install openstack-cinder kolla-helm/cinder --values ceph.enabled=false
+$ helm install openstack-cinder kolla-helm/cinder --set ceph.enabled=false
 ```
 
 ## Ceph Backend
@@ -73,10 +73,10 @@ required while the ceph backend was enabled.
 | `lvm.loop_device_name`       |  Loop Device Name           | The loop device's name                                                                                                       | `/dev/loop0`                 |
 | `lvm.loop_device_size`       | Loop Device Size            | The loop device's size, unit Mb                                                                                              | `2048`                       |
 | `lvm.loop_device_directory`  | Loop Device Directoyr       | The host directory save loop device file                                                                                     | `/var/lib/kolla-helm/cinder` |
-| `lvm.volume_type`            | Cinder Volume Type          | The cinder volume type name corresponding with lvm backend                                                                   | `lvm1`                       |
+| `lvm.volume_type`            | Cinder Volume Type          | The cinder volume type name corresponding with lvm backend                                                                   | `lvm`                       |
 | `lvm.lvm_target_helper`      | Cinder Lvm Target Helper    | Target user-land tool to use                                                                                                 | `tgtadm`                     |
 | `ceph.enabled`               | Enable Ceph                 | Whether or not enable ceph backend                                                                                           | `true`                       |
-| `ceph.volume_type`           | Cinder Volume Type          | The cinder volume type name corresponding with ceph backend                                                                  | `rbd1`                       |
+| `ceph.volume_type`           | Cinder Volume Type          | The cinder volume type name corresponding with ceph backend                                                                  | `rbd`                       |
 | `ceph.poolName`              | Pool Name                   | The ceph pool name which used to store the cinder volumes                                                                    | `volumes`                    |
 | `ceph.replicatedSize`        | Pool Replicated Size        | For a pool based on raw copies, specify the number of copies. A size of 1 indicates no redundancy.                           | `3`                          |
 | `ceph.failureDomain`         | Pool Failure Domain         | The failure domain will spread the replicas of the data across different failure zones                                       | `host`                       |

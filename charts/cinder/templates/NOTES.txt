@@ -1,4 +1,8 @@
 CHART NAME: {{ .Chart.Name }}
 CHART VERSION: {{ .Chart.Version }}
 
-** 请耐心等待 chart 部署完成 **
+** Please be patient while the chart is being deployed **
+
+You can use the below command to check whether or not all of related pods are ready.
+
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/instance={{ .Release.Name }}

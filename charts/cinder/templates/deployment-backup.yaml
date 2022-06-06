@@ -1,4 +1,4 @@
-{{- if .Values.ceph.backup.enabled }}
+{{- if and .Values.ceph.enabled .Values.ceph.backup.enabled }}
 apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
 kind: Deployment
 metadata:

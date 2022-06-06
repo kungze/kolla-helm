@@ -1,4 +1,4 @@
-name: Lint and install cinder chart
+name: Install cinder chart
 
 on:
   pull_request:
@@ -18,16 +18,8 @@ jobs:
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.2.1
 
-      - name: setup minikube
-        uses: manusa/actions-setup-minikube@v2.4.2
-        with:
-          minikube version: "v1.24.0"
-          kubernetes version: "v1.23.0"
-          start args: --memory 6g --cpus=2 --addons ingress --cni=flannel
-          github token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: remove read permission from kube config file
-        run: sudo chmod go-r ~/.kube/config
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
 
       - name: use local disk
         run: tests/scripts/github-action-helper.sh use_local_disk_for_integration_test
@@ -51,7 +43,7 @@ jobs:
       - name: Install openstack-dep chart
         run: |
           helm dependency build charts/openstack-dep
-          helm install openstack-dependency charts/openstack-dep --namespace test-cinder --wait
+          helm install openstack-dependency charts/openstack-dep --namespace test-cinder --wait --timeout 600s
 
       - name: Install keystone chart
         run: |
@@ -60,8 +52,3 @@ jobs:
 
       - name: Run chart-testing (install)
         run: ct install --namespace test-cinder --target-branch main --charts charts/cinder --debug --helm-extra-args "--timeout 600s"
-
-      - name: setup tmate session for debugging when event is PR
-        if: failure() && github.event_name == 'pull_request'
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 60

@@ -32,7 +32,7 @@ jobs:
       - name: Install openstack-dep chart
         run: |
           helm dependency build charts/openstack-dep
-          helm install openstack-dependency charts/openstack-dep --namespace openstack-keystone --wait
+          helm install openstack-dependency charts/openstack-dep --namespace openstack-keystone --wait --timeout 600s
 
       - name: Run chart-testing (install)
         run: ct install --namespace openstack-keystone --target-branch main --charts charts/keystone --debug --helm-extra-args "--timeout 600s"

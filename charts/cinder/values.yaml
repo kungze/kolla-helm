@@ -63,14 +63,14 @@ lvm:
   ## @param lvm.loop_device_directory [t#Loop Device Directoyr] The host directory save loop device file
   loop_device_directory: /var/lib/kolla-helm/cinder
   ## @param lvm.volume_type [t#Cinder Volume Type] The cinder volume type name corresponding with lvm backend
-  volume_type: lvm1
+  volume_type: lvm
   ## @param lvm.lvm_target_helper [t#Cinder Lvm Target Helper] Target user-land tool to use
   lvm_target_helper: tgtadm
 ceph:
   ## @param ceph.enabled [t#Enable Ceph] Whether or not enable ceph backend
   enabled: true
   ## @param ceph.volume_type [t#Cinder Volume Type] The cinder volume type name corresponding with ceph backend
-  volume_type: rbd1
+  volume_type: rbd
   ## @param ceph.poolName [t#Pool Name] The ceph pool name which used to store the cinder volumes
   poolName: volumes
   ## @param ceph.replicatedSize [t#Pool Replicated Size] For a pool based on raw copies, specify the number of copies. A size of 1 indicates no redundancy.

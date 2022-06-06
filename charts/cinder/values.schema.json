@@ -155,7 +155,7 @@
                     "type": "string",
                     "description": "The cinder volume type name corresponding with lvm backend",
                     "title": "Cinder Volume Type",
-                    "default": "lvm1"
+                    "default": "lvm"
                 },
                 "lvm_target_helper": {
                     "form": true,
@@ -181,7 +181,7 @@
                     "type": "string",
                     "description": "The cinder volume type name corresponding with ceph backend",
                     "title": "Cinder Volume Type",
-                    "default": "rbd1"
+                    "default": "rbd"
                 },
                 "poolName": {
                     "form": true,
