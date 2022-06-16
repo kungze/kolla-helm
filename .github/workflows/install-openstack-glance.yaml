@@ -1,0 +1,54 @@
+name: Install glance chart
+
+on:
+  pull_request:
+    paths:
+      - 'charts/glance/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.2.1
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
+
+      - name: use local disk
+        run: tests/scripts/github-action-helper.sh use_local_disk_for_integration_test
+
+      - name: Delply rook ceph
+        run: |
+          git clone --single-branch --branch v1.9.3 https://github.com/rook/rook.git
+          kubectl apply -f rook/deploy/examples/crds.yaml
+          kubectl apply -f rook/deploy/examples/common.yaml
+          kubectl apply -f rook/deploy/examples/operator.yaml
+          kubectl apply -f rook/deploy/examples/cluster-test.yaml
+
+      - name: Create k8s namespace
+        run:
+          kubectl create namespace test-glance
+
+      - name: Install password chart
+        run:
+          helm install openstack-password charts/password --namespace test-glance
+
+      - name: Install openstack-dep chart
+        run: |
+          helm dependency build charts/openstack-dep
+          helm install openstack-dependency charts/openstack-dep --namespace test-glance --wait --timeout 600s
+
+      - name: Install keystone chart
+        run: |
+          helm dependency build charts/keystone
+          helm install openstack-keystone charts/keystone --namespace test-glance --wait --timeout 600s
+
+      - name: Run chart-testing (install)
+        run: ct install --namespace test-glance --target-branch main --charts charts/glance --debug --helm-extra-args "--timeout 600s"

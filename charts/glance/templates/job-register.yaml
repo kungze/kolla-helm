@@ -1,0 +1,60 @@
+{{- define "glance.register.podCommands" -}}
+command:
+  - /bin/sh
+  - -c
+  - |
+    /tmp/ks-register-services.sh
+    /tmp/ks-register-users.sh
+
+{{- end }}
+
+{{- define "glance.register.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: SERVICE_NAME
+    value: glance
+  - name: SERVICE_TYPE
+    value: image
+  - name: SERVICE_VERSION
+    value: "v2"
+  - name: ADMIN_URL
+    valueFrom:
+      secretKeyRef:
+        key: GLANCE_ADMIN_ENDPOINT
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+  - name: INTERNAL_URL
+    valueFrom:
+      secretKeyRef:
+        key: GLANCE_INTERNAL_ENDPOINT
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+  - name: USER_NAME
+    value: glance
+  - name: USER_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: glance-keystone-password
+        name: {{ $envAll.Values.passwordRelease | quote }}
+  - name: INGRESS_URI
+    valueFrom:
+      secretKeyRef:
+        key: INGRESS_URI
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+{{- end }}
+
+{{- define "glance.register.podVolMounts" -}}
+volumeMounts:
+  - name: glance-bin
+    mountPath: /tmp/ks-register-services.sh
+    subPath: ks-register-services.sh
+  - name: glance-bin
+    mountPath: /tmp/ks-register-users.sh
+    subPath: ks-register-users.sh
+{{- end }}
+
+{{- $envAll := index . -}}
+{{- $podCommands := tuple . | include "glance.register.podCommands" | toString | fromYaml }}
+{{- $podEnvVars := tuple . | include "glance.register.podEnvVars" | toString | fromYaml }}
+{{- $podVolMounts := tuple . | include "glance.register.podVolMounts" | toString | fromYaml }}
+{{- $dependencySvcs := list "keystone-api" -}}
+{{- $registerJob := dict "envAll" . "serviceName" "glance" "dependencySvcs" $dependencySvcs "podCommands" $podCommands.command "podEnvVars" $podEnvVars.env "podVolMounts" $podVolMounts.volumeMounts -}}
+{{ $registerJob | include "common.manifests.job_register" }}

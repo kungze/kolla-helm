@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: glance-etc
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  kolla-toolbox-sudoer: |
+    ansible ALL=(ALL) NOPASSWD: ALL
+  glance-api.conf: |
+{{ tuple "conf/_glance_api.conf.tpl" . | include "common.utils.template" | indent 4 }}
+  config.json: |
+{{ tuple "conf/_glance_api.json.tpl" . | include "common.utils.template" | indent 4 }}
+  db-sync.json: |
+{{ tuple "conf/_glance_db_sync.json.tpl" . | include "common.utils.template" | indent 4 }}
+ 
