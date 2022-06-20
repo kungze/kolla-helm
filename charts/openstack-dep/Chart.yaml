@@ -13,7 +13,7 @@
 apiVersion: v2
 description: Install openstack dependency service
 name: openstack-dep
-version: 1.0.1
+version: 1.0.2
 home: https://github.com/kungze/kolla-helm
 maintainers:
   - name: Kungze
