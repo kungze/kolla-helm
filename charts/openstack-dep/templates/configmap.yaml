@@ -1,0 +1,8 @@
+{{- if .Values.ceph.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "ceph-monitor-endpoints"
+  namespace: {{ .Release.Namespace }}
+data:
+{{- end}}

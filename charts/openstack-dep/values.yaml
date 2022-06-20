@@ -125,3 +125,8 @@ memcached:
   service:
     ## @param memcached.service.port Memcached service port
     port: 11211
+
+## Ceph configuration
+ceph:
+  ## @param ceph.enabled Whether or not deploy ceph
+  enabled: true

@@ -99,6 +99,12 @@ type: Opaque
 | `memcached.enabled`      | Memcached  | Whether or not deploy memcached | `true`  |
 | `memcached.service.port` |            | Memcached service port          | `11211` |
 
+### Ceph parameters
+
+| Name                     | Form title | Description                     | Value   |
+| ------------------------ | ---------- | ------------------------------- | ------- |
+| `ceph.enabled`           | ceph       | Whether or not deploy ceph      | `true`  |
+
 
 [mariadb]: https://github.com/bitnami/charts/tree/master/bitnami/mariadb
 [rabbitmq]: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
