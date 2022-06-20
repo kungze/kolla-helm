@@ -15,13 +15,6 @@ metadata:
 type: Opaque
 data:
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: "ceph-monitor-endpoints"
-  namespace: {{ $envAll.Release.Namespace }}
-data:
----
 apiVersion: batch/v1
 kind: Job
 metadata:
