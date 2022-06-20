@@ -1,0 +1,6 @@
+{{- if .Values.ceph.enabled -}}
+{{ $images := dict "poolName" "images" "readOnly" true }}
+{{ $prvileges := tuple $images }}
+{{ $cephClient := dict "cephClusterNamespace" .Values.ceph.cephClusterNamespace "cephUserName" .Values.ceph.cephClientName "prvileges" $prvileges }}
+{{- $cephClient | include "common.manifests.cephclient" -}}
+{{- end -}}

@@ -1,0 +1,146 @@
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: glance-api
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: glance-api
+    spec:
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: DEPENDENCY_JOBS
+            value: "glance-db-sync,glance-register"
+      containers:
+        - name: glance-api
+          image: {{ template "glance.api.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          {{- if .Values.ceph.enabled }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /tmp/gen-ceph-conf.sh
+          {{- end }}
+          {{- if .Values.enableLivenessProbe }}
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              port: 9292
+              scheme: HTTP
+            initialDelaySeconds: 50
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
+          {{- if .Values.enableReadinessProbe }}
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              port: 9292
+              scheme: HTTP
+            initialDelaySeconds: 50
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
+          env:
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "glance-api"
+            {{- if .Values.ceph.enabled }}
+            - name: ROOK_CEPH_USERNAME
+              value: {{ .Values.ceph.cephClientName | quote }}
+            - name: ROOK_CEPH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "ceph-%s" .Values.ceph.cephClientName | quote }}
+                  key: {{ .Values.ceph.cephClientName }}
+            {{- end }}
+          ports:
+            - name: glance-api
+              containerPort: 9292
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/log/kolla/glance
+              name: kollalog
+              mountPropagation: "HostToContainer"
+            - mountPath: /tmp
+              name: pod-tmp
+            - mountPath: /var/lib/kolla/config_files/glance-api.conf
+              name: glance-etc
+              subPath: glance-api.conf
+            - mountPath: /var/lib/kolla/config_files/config.json
+              name: glance-etc
+              subPath: config.json
+            {{- if .Values.ceph.enabled }}
+            - mountPath: /etc/ceph
+              name: etc-ceph
+            - mountPath: /tmp/gen-ceph-conf.sh
+              name: glance-bin
+              subPath: gen-ceph-conf.sh
+            - mountPath: /etc/rook
+              name: mon-endpoint-volume
+            {{- else }}
+            - mountPath: /var/lib/glance/images
+              name: image-path
+              mountPropagation: "HostToContainer"
+            {{- end }}
+      serviceAccount: {{ .Values.serviceAccountName}}
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      volumes:
+        - hostPath:
+            path: /var/log/kolla/glance
+            type: DirectoryOrCreate
+          name: kollalog
+        - emptyDir: {}
+          name: pod-tmp
+        - configMap:
+            defaultMode: 365
+            name: glance-etc
+          name: glance-etc
+        - configMap:
+            defaultMode: 0755
+            name: glance-bin
+          name: glance-bin
+        {{- if .Values.ceph.enabled }}
+        - emptyDir: {}
+          name: etc-ceph
+        - name: mon-endpoint-volume
+          configMap:
+            name: "ceph-monitor-endpoints"
+            items:
+              - key: data
+                path: mon-endpoints
+        {{- else }}
+        - hostPath:
+            path: /var/lib/glance/images
+            type: DirectoryOrCreate
+          name: image-path
+        {{- end }}
