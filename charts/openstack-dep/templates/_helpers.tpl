@@ -118,3 +118,19 @@ Return the memcached connInfo
     {{- $memcachedPort := (include "openstack.cachePort" . | int) }}
     {{- printf "%s:%d" $memcachedHost $memcachedPort }}
 {{- end -}}
+
+{{- define "common.template" -}}
+{{- $name := index . 0 -}}
+{{- $context := index . 1 -}}
+{{- $last := base $context.Template.Name }}
+{{- $wtf := $context.Template.Name | replace $last $name -}}
+{{ include $wtf $context }}
+{{- end -}}
+
+{{/*
+Return the sync endpoint image name
+*/}}
+{{- define "sync.endpoint.image" -}}
+{{- $repository := "ubuntu-source-kolla-toolbox" -}}
+{{- printf "%s/%s/%s:%s" .Values.imageRegistry .Values.imageNamespace $repository .Values.openstackTag }}
+{{- end -}}

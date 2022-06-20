@@ -14,6 +14,20 @@
 ## @param clusterDomainSuffix [t#Cluser domain suffix] The domain suffix of of the current k8s cluser
 clusterDomainSuffix: cluster.local
 
+## @section Deployment Parameters
+## @param serviceAccountName ServiceAccount name
+serviceAccountName: openstack-dep
+
+## @section Image Parameters
+## @param imageRegistry [t#Image Registry] The registry address of openstack kolla image
+imageRegistry: "registry.aliyuncs.com"
+## @param imageNamespace [t#Image Namespace] The registry namespace of openstack kolla image
+imageNamespace: "kolla-helm"
+## @param openstackTag [t#Openstack version] The openstack version
+openstackTag: "yoga"
+## @param pullPolicy [t#Pull Policy] The image pull policy
+pullPolicy: "IfNotPresent"
+
 ## @section Ingress parameters
 ## nginx-ingress-controller chart configuration
 ## ref: https://github.com/bitnami/charts/blob/master/bitnami/nginx-ingress-controller/values.yaml
@@ -125,3 +139,12 @@ memcached:
   service:
     ## @param memcached.service.port Memcached service port
     port: 11211
+
+## Ceph configuration
+ceph:
+  ## @param ceph.enabled [t#Enable Ceph] Whether or not enable ceph backend
+  enabled: true
+  ## @param ceph.cephClusterNamespace [t#Rook Ceph Cluster Namespace] The k8s namespace of rook cephcluster
+  cephClusterNamespace: rook-ceph
+  ## @param ceph.cephClusterName [t#Rook Ceph Cluster Name] The rook cephcluster name
+  cephClusterName: rook-ceph
