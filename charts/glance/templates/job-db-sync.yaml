@@ -1,0 +1,16 @@
+{{- define "glance.sync_db.volumeMounts" -}}
+{{- $envAll := index . 0 -}}
+volumeMounts:
+  - name: glance-etc
+    mountPath: /var/lib/kolla/config_files/glance-api.conf
+    subPath: glance-api.conf
+{{- end }}
+
+{{- $local := dict "podVolMounts" false -}}
+{{- $envAll := index . -}}
+{{- $_ := set $local "podVolMounts" ( index ( tuple . | include "glance.sync_db.volumeMounts" | toString | fromYaml ) "volumeMounts" ) }}
+{{- $dependencyJobs := list "glance-db-init" "glance-cm-render" -}}
+{{- $image := include "glance.api.image" . -}}
+{{- $dbSyncJob := dict "envAll" . "serviceName" "glance" "dependencyJobs" $dependencyJobs "podVolMounts" $local.podVolMounts "image" $image -}}
+{{ $dbSyncJob | include "common.manifests.job_db_sync" }}
+
