@@ -5,7 +5,9 @@ set -ex
 PUBLIC_URL=""
 if [ -z "$INGRESS_URI" ]; then
     PUBLIC_URL=$INTERNAL_URL
-else
+elif [ "$API_VERSION" ]; then
+    PUBLIC_URL=$INGRESS_URI/$SERVICE_TYPE/$API_VERSION
+else 
     PUBLIC_URL=$INGRESS_URI/$SERVICE_TYPE/v3
 fi
 

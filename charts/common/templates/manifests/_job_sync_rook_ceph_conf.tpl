@@ -15,13 +15,6 @@ metadata:
 type: Opaque
 data:
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: "ceph-monitor-endpoints"
-  namespace: {{ $envAll.Release.Namespace }}
-data:
----
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -39,24 +32,20 @@ spec:
           command:
             - /bin/sh
             - -c
-            - python /tmp/sync-ceph-cm-secrets.py
+            - python /tmp/sync-ceph-secrets.py
           env:
             - name: KUBERNETES_NAMESPACE
               value: {{ $envAll.Release.Namespace | quote }}
             - name: ROOK_CEPH_CLUSTER_NAMESPACE
               value: {{ $envAll.Values.ceph.cephClusterNamespace | quote }}
-            - name: ROOK_CEPH_MON_ENDPOINTS_CONFIGMAP
-              value: {{ printf "%s-mon-endpoints" $envAll.Values.ceph.cephClusterName }}
             - name: ROOK_CEPH_CLIENT_SECRET
               value: {{ printf "%s-client-%s" $envAll.Values.ceph.cephClusterName $envAll.Values.ceph.cephClientName | quote }}
-            - name: OS_CEPH_MON_CONFIGMAP
-              value: "ceph-monitor-endpoints"
             - name: OS_CEPH_CLIENT_SECRET
               value: {{ printf "ceph-%s" $envAll.Values.ceph.cephClientName | quote }}
           volumeMounts:
           - mountPath: /tmp
             name: pod-tmp
-          - mountPath: /tmp/sync-ceph-cm-secrets.py
+          - mountPath: /tmp/sync-ceph-secrets.py
             name: {{ printf "%s-bin" $serviceName | quote }}
             subPath: sync-ceph-cm-secrets.py
       restartPolicy: OnFailure
