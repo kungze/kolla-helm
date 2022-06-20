@@ -1,0 +1,18 @@
+{{- if .Values.ceph.enabled -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "ceph-monitor-endpoints"
+  namespace: {{ .Release.Namespace }}
+data:
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "sync-ceph-endpoint-cm"
+  namespace: {{ .Release.Namespace }}
+data:
+  sync-ceph-endpoint.py: |
+{{ tuple "bin/_sync-ceph-endpoint.py.tpl" . | include "common.template" | indent 4 }}
+{{- end }}

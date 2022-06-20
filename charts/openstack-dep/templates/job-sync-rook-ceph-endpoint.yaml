@@ -1,0 +1,44 @@
+{{- if .Values.ceph.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sync-rook-ceph-endpoint
+  namespace: {{ .Release.Namespace }}
+spec:
+  template:
+    spec:
+      activeDeadlineSeconds: 100
+      containers:
+        - name: sync-rook-ceph-endpoint
+          image: {{ template "sync.endpoint.image" . }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - python /tmp/sync-ceph-endpoint.py
+          env:
+            - name: KUBERNETES_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: ROOK_CEPH_CLUSTER_NAMESPACE
+              value: {{ .Values.ceph.cephClusterNamespace }}
+            - name: ROOK_CEPH_MON_ENDPOINTS_CONFIGMAP
+              value:  {{ printf "%s-mon-endpoints" .Values.ceph.cephClusterName }}
+            - name: OS_CEPH_MON_CONFIGMAP
+              value: "ceph-monitor-endpoints"
+          volumeMounts:
+          - mountPath: /tmp
+            name: pod-tmp
+          - mountPath: /tmp/sync-ceph-endpoint.py
+            name: sync-ceph-endpoint-cm
+            subPath: sync-ceph-endpoint.py
+      restartPolicy: OnFailure
+      serviceAccount: {{ .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+        - emptyDir: {}
+          name: pod-tmp
+        - name: sync-ceph-endpoint-cm
+          configMap:
+            defaultMode: 0755
+            name: sync-ceph-endpoint-cm
+{{- end }}
