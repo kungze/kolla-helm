@@ -1,0 +1,11 @@
+apiVersion: v2
+description: Openstack glance service
+name: glance
+version: 1.0.1
+home: https://github.com/kungze/kolla-helm
+maintainers:
+  - name: Kungze
+dependencies:
+  - name: common
+    repository: https://kungze.github.io/kolla-helm
+    version: 1.x.x

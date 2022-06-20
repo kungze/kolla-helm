@@ -1,0 +1,4 @@
+{{- $envAll := index . -}}
+{{- $dependencyJobs := list "glance-cm-render" -}}
+{{- $dbInitJob := dict "envAll" . "serviceName" "glance" "dependencyJobs" $dependencyJobs -}}
+{{- include "common.manifests.job_db_init" $dbInitJob }}
