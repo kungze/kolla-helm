@@ -1,0 +1,4 @@
+{{- $envAll := index . -}}
+{{- $dependencyJobs := list "neutron-cm-render" -}}
+{{- $dbInitJob := dict "envAll" . "serviceName" "neutron" "dependencyJobs" $dependencyJobs -}}
+{{- include "common.manifests.job_db_init" $dbInitJob }}

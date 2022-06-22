@@ -1,0 +1,192 @@
+{{- if .Values.neutron_openvswitch_agent.enabled}}
+---
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: DaemonSet
+metadata:
+  name: neutron-openvswitch
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: neutron-openvswitch
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: DEPENDENCY_JOBS
+            value: "neutron-db-sync,neutron-register"
+      containers:
+        - name: neutron-openvswitch-db
+          securityContext:
+            privileged: true
+          image: {{ template "neutron.openvswitch-db.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env: 
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "openvswitch-db-server"
+          volumeMounts:
+            - mountPath: /var/log/kolla/openvswitch
+              name: kolla-openvswitch-log
+              mountPropagation: HostToContainer
+            - mountPath: /run/openvswitch
+              name: run-openvswitch
+              mountPropagation: HostToContainer
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: true
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/config.json
+              subPath: openvswitch-db-server.json
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/start-ovsdb-server
+              subPath: start-ovsdb-server 
+        - name: openvswitch-vswitchd
+          securityContext:
+            privileged: true
+          image: {{ template "neutron.openvswitch-vswitchd.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env: 
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "openvswitch-vswitchd"
+          volumeMounts:
+            - mountPath: /var/log/kolla/openvswitch
+              name: kolla-openvswitch-log
+              mountPropagation: HostToContainer
+            - mountPath: /run/openvswitch
+              name: run-openvswitch
+              mountPropagation: HostToContainer
+            - mountPath: /lib/modules
+              name: lib-modules
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/config.json
+              subPath: openvswitch-vswitchd.json
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/start-ovs
+              subPath: start-ovs  
+        - name: neutron-openvswitch-agent-init
+          securityContext:
+            privileged: true 
+          image: {{ template "neutron.openvswitch-agent-init.image" . }}     
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          lifecycle:
+            postStart:
+              exec:
+                command: 
+                  - "/bin/bash"
+                  - "-c"
+                  - >
+                    python3 /tmp/neutron-configmap-render.py;
+                    sudo /opt/ansible/bin/ansible localhost -m openvswitch_bridge -a "bridge='br-ex' fail_mode='secure' state='present'";
+                    sudo /opt/ansible/bin/ansible localhost -m openvswitch_port -a "bridge='br-ex' port='{{ .Values.external_interface }}' state='present'";      
+          env:
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: ANSIBLE_LIBRARY
+              value: /usr/share/ansible
+            - name: KOLLA_SERVICE_NAME
+              value: "neutron-openvswitch-agent-init"
+            - name: KUBERNETES_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: CONFIG_MAP_NAME
+              value: "neutron-etc"
+            - name: CONF_FILE_NAME
+              value: "openvswitch_agent.ini"
+            - name: TUNNEL_INTERFACE_NAME
+              value: {{ .Values.neutron_openvswitch_agent.tunnel_interface }}
+          volumeMounts:
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/config.json
+              subPath: kolla-toolbox.json
+            - name: neutron-etc
+              mountPath: /etc/sudoers.d/kolla_ansible_sudoers
+              subPath: kolla-toolbox-sudoer
+            - name: run-openvswitch
+              mountPath: /run/openvswitch
+            - mountPath: /tmp
+              name: pod-tmp
+            - mountPath: /tmp/neutron-configmap-render.py
+              name: neutron-bin
+              subPath: neutron-configmap-render.py
+        - name: neutron-openvswitch-agent
+          securityContext:
+            privileged: true
+          image: {{ template "neutron.openvswitch-agent.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env: 
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "neutron-openvswitch-agent"
+          volumeMounts:
+            - mountPath: /var/log/kolla/neutron
+              name: kolla-neutron-log
+              mountPropagation: HostToContainer
+            - mountPath: /run/openvswitch
+              name: run-openvswitch
+              mountPropagation: HostToContainer
+            - name: neutron-etc
+              mountPath: /etc/sudoers.d/kolla_ansible_sudoers
+              subPath: kolla-toolbox-sudoer
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/config.json
+              subPath: neutron-openvswitch-agent.json
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/neutron.conf
+              subPath: neutron.conf
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/openvswitch_agent.ini
+              subPath: openvswitch_agent.ini
+      serviceAccount: {{ .Values.serviceAccountName}}
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      volumes:
+        - emptyDir: {}
+          name: pod-tmp
+        - hostPath:
+            path: /var/log/kolla/openvswitch
+            type: DirectoryOrCreate
+          name: kolla-openvswitch-log
+        - hostPath:
+            path: /var/log/kolla/neutron
+            type: DirectoryOrCreate
+          name: kolla-neutron-log
+        - hostPath:
+            path: /run/openvswitch
+            type: DirectoryOrCreate
+          name: run-openvswitch
+        - hostPath:
+            path: /lib/modules
+            type: DirectoryOrCreate
+          name: lib-modules
+        - name: neutron-etc
+          configMap:
+            name: neutron-etc
+        - name: neutron-bin
+          configMap:
+            name: neutron-bin
+{{- end }}
