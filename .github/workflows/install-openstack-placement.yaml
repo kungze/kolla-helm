@@ -1,0 +1,43 @@
+name: Install placement chart
+
+on:
+  pull_request:
+    paths:
+      - 'charts/placement/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.2.1
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
+
+      - name: Create k8s namespace
+        run:
+          kubectl create namespace openstack-placement
+
+      - name: Install password chart
+        run:
+          helm install openstack-password charts/password --namespace openstack-placement
+
+      - name: Install openstack-dep chart
+        run: |
+          helm dependency build charts/openstack-dep
+          helm install openstack-dependency charts/openstack-dep --namespace openstack-placement --wait --timeout 600s
+      
+      - name: Install keystone chart
+        run: |
+          helm dependency build charts/keystone
+          helm install openstack-keystone charts/keystone --namespace openstack-placement --wait --timeout 600s
+
+      - name: Run chart-testing (install)
+        run: ct install --namespace openstack-placement --target-branch main --charts charts/placement --debug --helm-extra-args "--timeout 600s"

@@ -1,0 +1,12 @@
+{{- define "placement.render.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: CONF_FILE_NAME
+    value: placement.conf
+{{- end -}}
+
+{{- $envAll := index . -}}
+{{- $podEnvVars := tuple . | include "placement.render.podEnvVars" | toString | fromYaml }}
+{{- $dependencyJobs := list "placement-update-openstack-conn-info" -}}
+{{- $cmRenderJob := dict "envAll" . "serviceName" "placement" "dependencyJobs" $dependencyJobs "podEnvVars" $podEnvVars.env -}}
+{{ $cmRenderJob | include "common.manifests.job_cm_render" }}

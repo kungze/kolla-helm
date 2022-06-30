@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: placement-etc
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  kolla-toolbox-sudoer: |
+    ansible ALL=(ALL) NOPASSWD: ALL
+  db-sync.json: |
+{{ tuple "conf/_placement_db_sync.json.tpl" . | include "common.utils.template" | indent 4 }}
+  placement.conf: |
+{{ tuple "conf/_placement.conf.tpl" . | include "common.utils.template" | indent 4 }}
+  placement-api-wsgi.conf: |
+{{ tuple "conf/_placement-api-wsgi.conf.tpl" . | include "common.utils.template" | indent 4}}
+  placement-api.json : |
+{{ tuple "conf/_placement-api.json.tpl" . | include "common.utils.template" | indent 4}}
