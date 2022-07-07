@@ -1,0 +1,86 @@
+---
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: DaemonSet
+metadata:
+  name: nova-ssh
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: nova-ssh
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: DEPENDENCY_JOBS
+            value: "nova-gen-ssh-key"
+      containers:
+        - name: nova-ssh
+          image: {{ template "nova.ssh.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env: 
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "nova-ssh"
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+          volumeMounts:
+            - mountPath: /var/log/kolla/nova
+              name: kolla-ssh-log
+            - name: nova-etc
+              mountPath: /var/lib/kolla/config_files/config.json
+              subPath: nova-ssh.json
+            - name: nova-etc
+              mountPath: /var/lib/kolla/config_files/sshd_config
+              subPath: sshd-config
+            - name: nova-etc
+              mountPath: /var/lib/kolla/config_files/ssh_config
+              subPath: ssh-config
+            - name: nova-ssh
+              mountPath: /var/lib/kolla/config_files/id_rsa.pub
+              subPath: public_key
+            - name: nova-ssh
+              mountPath: /var/lib/kolla/config_files/id_rsa
+              subPath: private_key
+            - mountPath: /var/lib/nova
+              name: var-lib-nova
+      serviceAccount: {{ .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+        - hostPath:
+            path: /var/log/kolla/nova
+            type: DirectoryOrCreate
+          name: kolla-ssh-log
+        - name: nova-etc
+          configMap:
+            name: nova-etc
+        - name: nova-ssh
+          secret:
+            secretName: nova-ssh
+        - hostPath:
+            path: /var/lib/nova
+            type: DirectoryOrCreate
+          name: var-lib-nova

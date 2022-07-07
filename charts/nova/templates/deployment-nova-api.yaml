@@ -1,0 +1,102 @@
+---
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: nova-api
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: nova-api
+    spec:
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: DEPENDENCY_JOBS
+            value: "nova-db-sync,nova-register"
+      containers:
+        - name: nova-api
+          securityContext:
+            privileged: true
+          image: {{ template "nova.api.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          {{- if .Values.enableLivenessProbe }}
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              port: 8774
+              scheme: HTTP
+            initialDelaySeconds: 50
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
+          {{- if .Values.enableReadinessProbe }}
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              port: 8774
+              scheme: HTTP
+            initialDelaySeconds: 50
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
+          env: 
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "nova-api"
+          ports:
+            - name: nova-api
+              containerPort: 8774
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/log/kolla/nova
+              name: kollalog
+              mountPropagation: HostToContainer
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: true
+            - name: nova-etc
+              mountPath: /var/lib/kolla/config_files/config.json
+              subPath: nova-api.json
+            - name: nova-etc
+              mountPath: /var/lib/kolla/config_files/nova.conf
+              subPath: nova.conf
+      serviceAccount: {{ .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+        - hostPath:
+            path: /var/log/kolla/nova
+            type: DirectoryOrCreate
+          name: kollalog
+        - hostPath:
+            path: /lib/modules
+            type: DirectoryOrCreate
+          name: lib-modules
+        - configMap:
+            defaultMode: 420
+            name: nova-etc
+          name: nova-etc
