@@ -4,6 +4,12 @@
 {{- $dependencyJobs := index . "dependencyJobs" -}}
 {{- $configMapBin := index . "configMapBin" | default (printf "%s-%s" $serviceName "bin" ) -}}
 {{- $configMapEtc := index . "configMapEtc" | default (printf "%s-%s" $serviceName "etc" ) -}}
+{{- $dbNames := list "" }}
+{{- if hasKey . "dbNames" }}
+{{- $dbNames = index . "dbNames" }}
+{{- else }}
+{{- $dbNames = list $serviceName }}
+{{- end -}}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -15,7 +21,8 @@ spec:
     spec:
       activeDeadlineSeconds: 100
       containers:
-        - name: {{ printf "%s-%s" $serviceName "db-init" | quote }}
+        {{- range $dbNames }}
+        - name: {{ printf "%s-%s" .  "db-init" | replace "_" "-" | quote }}
           image: {{ include "common.images.kolla-toolbox" $envAll | quote }}
           imagePullPolicy: {{ $envAll.Values.pullPolicy }}
           command:
@@ -40,7 +47,7 @@ spec:
             - name: SETUPTOOLS_USE_DISTUTILS
               value: "stdlib"
             - name: DB_NAME
-              value: {{ $envAll.Values.db_database | quote }}
+              value: {{ . }}
             - name: DB_USER
               value: {{ $envAll.Values.db_username | quote }}
             - name: DBATBASE_ENDPOINT
@@ -67,6 +74,7 @@ spec:
             - mountPath: /etc/sudoers.d/kolla_ansible_sudoers
               name: {{ $configMapEtc | quote }}
               subPath: kolla-toolbox-sudoer
+        {{- end }}
       initContainers:
         - name: init
           image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" $envAll.Values.imageRegistry "namespace" $envAll.Values.imageNamespace) | quote }}
