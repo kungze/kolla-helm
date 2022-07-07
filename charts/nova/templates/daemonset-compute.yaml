@@ -1,0 +1,148 @@
+---
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: DaemonSet
+metadata:
+  name: nova-compute
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: nova-compute
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: DEPENDENCY_JOBS
+            value: "nova-db-sync,nova-register"
+          - name: PATH
+            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+      containers:
+        - name: nova-compute
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            runAsGroup: 0
+          image: {{ template "nova.compute.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          {{- if .Values.ceph.enabled }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - /tmp/gen-ceph-conf.sh
+          {{- end }}
+          env: 
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "nova-compute"
+            - name: LIBVIRT_DEFAULT_URI
+              value: "qemu:///system"
+            {{- if .Values.ceph.enabled }}
+            - name: ROOK_CEPH_USERNAME
+              value: {{ .Values.ceph.cephClientName | quote }}
+            - name: ROOK_CEPH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "ceph-%s" .Values.ceph.cephClientName | quote }}
+                  key: {{ .Values.ceph.cephClientName }}
+            {{- end }}
+          volumeMounts:
+            - mountPath: /var/log/kolla/nova
+              name: kolla-nova-log
+            - name: nova-etc
+              mountPath: /var/lib/kolla/config_files/config.json
+              subPath: nova-compute.json
+            - name: nova-etc
+              mountPath: /var/lib/kolla/config_files/nova.conf
+              subPath: nova.conf
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: true
+            - mountPath: /run
+              name: run
+              mountPropagation: HostToContainer
+            - mountPath: /dev
+              name: dev
+            - mountPath: /var/lib/libvirt
+              name: var-lib-libvirt
+            - mountPath: /var/lib/nova
+              name: var-lib-nova
+            {{- if .Values.ceph.enabled }}
+            - mountPath: /etc/ceph
+              name: etc-ceph
+            - mountPath: /tmp/gen-ceph-conf.sh
+              name: nova-bin
+              subPath: gen-ceph-conf.sh
+            - mountPath: /etc/rook
+              name: mon-endpoint-volume
+            {{- end }}
+      serviceAccount: {{ .Values.serviceAccountName}}
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      volumes:
+        - hostPath:
+            path: /var/log/kolla/nova
+            type: DirectoryOrCreate
+          name: kolla-nova-log
+        - name: nova-etc
+          configMap:
+            name: nova-etc
+        - hostPath:
+            path: /lib/modules
+            type: DirectoryOrCreate
+          name: lib-modules
+        - hostPath:
+            path: /run
+            type: DirectoryOrCreate
+          name: run
+        - hostPath:
+            path: /dev
+            type: DirectoryOrCreate
+          name: dev
+        - hostPath:
+            path: /var/lib/libvirt
+            type: DirectoryOrCreate
+          name: var-lib-libvirt
+        - hostPath:
+            path: /var/lib/nova
+            type: DirectoryOrCreate
+          name: var-lib-nova
+        {{- if .Values.ceph.enabled }}
+        - emptyDir: {}
+          name: etc-ceph
+        - name: mon-endpoint-volume
+          configMap:
+            name: ceph-monitor-endpoints
+            items:
+              - key: data
+                path: mon-endpoints
+        - name: nova-bin
+          configMap:
+            name: nova-bin
+            defaultMode: 0755      
+        {{- end }}
+

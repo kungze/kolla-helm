@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nova-etc
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  kolla-toolbox-sudoer: |
+    ansible ALL=(ALL) NOPASSWD: ALL
+  db-sync.json: |
+{{ tuple "conf/_nova_db_sync.json.tpl" . | include "common.utils.template" | indent 4 }}
+  nova.conf: |
+{{ tuple "conf/_nova.conf.tpl" . | include "common.utils.template" | indent 4 }}
+  nova-api.json : |
+{{ tuple "conf/_nova-api.json.tpl" . | include "common.utils.template" | indent 4}}
+  nova-super-conductor.json : |
+{{ tuple "conf/_nova-super-conductor.json.tpl" . | include "common.utils.template" | indent 4}}
+  nova-libvirt.json : |
+{{ tuple "conf/_nova-libvirt.json.tpl" . | include "common.utils.template" | indent 4}}
+  libvirtd.conf : |
+{{ tuple "conf/_libvirtd.conf.tpl" . | include "common.utils.template" | indent 4}}
+  qemu.conf : |
+{{ tuple "conf/_qemu.conf.tpl" . | include "common.utils.template" | indent 4}}
+  nova-compute.json : |
+{{ tuple "conf/_nova-compute.json.tpl" . | include "common.utils.template" | indent 4}}
+  nova-libvirt.json : |
+{{ tuple "conf/_nova-libvirt.json.tpl" . | include "common.utils.template" | indent 4}}
+  nova-scheduler.json : |
+{{ tuple "conf/_nova-scheduler.json.tpl" . | include "common.utils.template" | indent 4}}

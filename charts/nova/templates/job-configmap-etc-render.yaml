@@ -1,0 +1,37 @@
+{{- define "nova.render.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: CONF_FILE_NAME
+    value: nova.conf
+  - name: CINDER_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: cinder-keystone-password
+        name: {{ $envAll.Values.passwordRelease | quote }}
+  - name: NEUTRON_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: neutron-keystone-password
+        name: {{ $envAll.Values.passwordRelease | quote }}
+  - name: PLACEMENT_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: placement-keystone-password
+        name: {{ $envAll.Values.passwordRelease | quote }}
+  - name: GLANCE_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        key: GLANCE_INTERNAL_ENDPOINT
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
+  - name: RBD_SECRET_UUID
+    valueFrom:
+      secretKeyRef:
+        name: {{ $envAll.Values.passwordRelease | quote }}
+        key: "rbd-secret-uuid"
+{{- end -}}
+
+{{- $envAll := index . -}}
+{{- $podEnvVars := tuple . | include "nova.render.podEnvVars" | toString | fromYaml }}
+{{- $dependencyJobs := list "nova-update-openstack-conn-info" -}}
+{{- $cmRenderJob := dict "envAll" . "serviceName" "nova" "dependencyJobs" $dependencyJobs "podEnvVars" $podEnvVars.env -}}
+{{ $cmRenderJob | include "common.manifests.job_cm_render" }}

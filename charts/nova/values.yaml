@@ -1,0 +1,81 @@
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+## @section Cluster Paramters
+## @param cluster_domain_suffix [t#Cluster Domain Suffix] The doamin suffix of the current k8s cluster
+cluster_domain_suffix: cluster.local
+
+## @section Dependency Parameters
+## @param openstackDepRelease [t#Openstack-dep Release] The release name of openstack-dep chart
+openstackDepRelease: "openstack-dependency"
+## @param passwordRelease [t#Password Release] The release name of password chart
+passwordRelease: "openstack-password"
+## @param keystoneRelease [t#keystone Release] The release name of keystone chart
+keystoneRelease: "openstack-keystone"
+
+## @section Image Parameters
+## @param imageRegistry [t#Image Registry] The registry address of openstack kolla image
+imageRegistry: "registry.aliyuncs.com"
+## @param imageNamespace [t#Image Namespace] The registry namespace of openstack kolla image
+imageNamespace: "kolla-helm"
+## @param openstackTag [t#Openstack version] The openstack version
+openstackTag: "yoga"
+## @param pullPolicy [t#Pull Policy] The image pull policy
+pullPolicy: "IfNotPresent"
+
+## @section Deployment Parameters
+## @param replicaCount Number of nova replicas to deploy (requires ReadWriteMany PVC support)
+replicaCount: 1
+## @param serviceAccountName ServiceAccount name
+serviceAccountName: nova
+## @param enableLivenessProbe [t#Enable Liveness Probe] Whether or not enable liveness probe
+enableLivenessProbe: true
+## @param enableReadinessProbe [t#Enable Readliness Probe] Whether or not enable readiness probe
+enableReadinessProbe: true
+
+## @section nova Config parameters
+## @param db_database.nova_database [t#Nova database] The nova database name
+## @param db_database.nova_api_database [t#Nova_api database] The nova_api database name
+## @param db_database.nova_cell0_database [t#Nova_cell0 database] The nova_cell0 database name
+db_database:
+  nova_database: nova
+  nova_api_database: nova_api
+  nova_cell0_database: nova_cell0
+## @param db_username [t#Nova Database User] The nova database user name
+db_username: nova
+## @param enabled_notification [t#Enable Notification] Whether or not enable notification
+enabled_notification: false
+
+ceph:
+  ## @param ceph.enabled [t#Enable Ceph] Whether or not enable ceph backend
+  enabled: true
+  ## @param ceph.poolName [t#Pool Name] The ceph pool name which used to store the instance
+  poolName: compute
+  ## @param ceph.replicatedSize [t#Pool Replicated Size] For a pool based on raw copies, specify the number of copies. A size of 1 indicates no redundancy.
+  replicatedSize: 1
+  ## @param ceph.failureDomain [t#Pool Failure Domain] The failure domain will spread the replicas of the data across different failure zones
+  failureDomain: host
+  ## @param ceph.cephClusterNamespace [t#Rook Ceph Cluster Namespace] The k8s namespace of rook cephcluster
+  cephClusterNamespace: rook-ceph
+  ## @param ceph.cephClusterName [t#Rook Ceph Cluster Name] The rook cephcluster name
+  cephClusterName: rook-ceph
+  ## @param ceph.cephClientName [t#Rook Ceph Client Name] The name of rook ceph cephclient
+  cephClientName: nova
+
+## @section Ingress Parameters
+## @param ingress.enabled [t#Ingress] Whether or not create ingress for nova service
+## @param ingress.ingressClass [t#Ingress Class] Ingress Class Name
+## @param ingress.path [t#Path Prefix] Ingress will match the path prefix, and forward the matched request to nova service
+ingress:
+  enabled: true
+  ingressClass: openstack-nginx
+  path: compute

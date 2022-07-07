@@ -1,0 +1,3 @@
+{{- if .Values.ceph.enabled }}
+{{ dict "envAll" . "serviceName" "nova" | include "common.manifests.job_sync_rook_ceph_conf" }}
+{{- end }}

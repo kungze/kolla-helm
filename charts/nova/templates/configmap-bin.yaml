@@ -1,0 +1,31 @@
+{{- $envAll := . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nova-bin
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  db-init.sh: |
+{{- include "common.scripts.db_init" . | indent 4 }}
+  db-sync.sh: |
+{{- include "common.scripts.db_sync" . | indent 4 }}
+  ks-register-services.sh: |
+{{- include "common.scripts.ks_register_services" . | indent 4  }}
+  ks-register-users.sh: |
+{{- include "common.scripts.ks_register_users" . | indent 4  }}
+  configmap-render.py: |
+{{ include "common.scripts.configmap_render" . | indent 4 }}
+  update-openstack-conn-info.py: |
+{{- include "common.scripts.update_openstack_conn_info" . | indent 4  }}
+  nova-db-sync.sh: |
+{{ tuple "bin/_nova-db-sync.sh.tpl" . | include "common.utils.template" | indent 4}}
+  {{- if .Values.ceph.enabled }}
+  gen-ceph-conf.sh: |
+{{ include "common.scripts.gen_ceph_conf" . | indent 4 }}
+  sync-ceph-cm-secrets.py: |
+{{- include "common.scripts.sync_ceph_cm_secret" . | indent 4 }}
+  secret-ceph-conf.sh : |
+{{ tuple "bin/_secret-ceph-conf.sh.tpl" . | include "common.utils.template" | indent 4}}
+  {{- end }}
+

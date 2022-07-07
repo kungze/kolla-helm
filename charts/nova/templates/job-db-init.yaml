@@ -1,0 +1,5 @@
+{{- $envAll := index . -}}
+{{- $dependencyJobs := list "nova-cm-render" -}}
+{{- $dbNames := list .Values.db_database.nova_database .Values.db_database.nova_api_database .Values.db_database.nova_cell0_database -}}
+{{- $dbInitJob := dict "envAll" . "serviceName" "nova" "dependencyJobs" $dependencyJobs "dbNames" $dbNames -}}
+{{- include "common.manifests.job_db_init" $dbInitJob }}
