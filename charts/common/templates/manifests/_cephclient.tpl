@@ -20,6 +20,8 @@ metadata:
   namespace: {{ $cephClusterNamespace | quote }}
 spec:
   caps:
-    mon: "profile rbd"
-    osd: {{ $prvileges | include "common.utils.joinCephProfile" | quote }}
+    mon: "allow *"
+    osd: "allow *"
+    mds: "allow *"
+    mgr: "allow *"
 {{- end -}}

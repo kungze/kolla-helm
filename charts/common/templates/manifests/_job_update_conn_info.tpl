@@ -37,8 +37,8 @@ spec:
               name: {{ $configMapBin | quote }}
               subPath: update-openstack-conn-info.py
       restartPolicy: OnFailure
-      serviceAccount: {{ $envAll.Values.serviceAccountName}}
-      serviceAccountName: {{ $envAll.Values.serviceAccountName}}
+      serviceAccount: {{ $envAll.Values.serviceAccountName }}
+      serviceAccountName: {{ $envAll.Values.serviceAccountName }}
       volumes:
       - emptyDir: {}
         name: pod-tmp
