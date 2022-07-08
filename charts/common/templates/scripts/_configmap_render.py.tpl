@@ -15,6 +15,12 @@ RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', None)
 OS_REGION = os.getenv('OS_REGION', None)
 KEYSTONE_ENDPOINT = os.getenv('KEYSTONE_ENDPOINT', None)
 KEYSTONE_PASSWORD = os.getenv('KEYSTONE_PASSWORD', None)
+GLANCE_ENDPOINT = os.getenv('GLANCE_ENDPOINT', None)
+GLANCE_PASSWORD = os.getenv('GLANCE_PASSWORD', None)
+CINDER_PASSWORD = os.getenv('CINDER_PASSWORD', None)
+NEUTRON_PASSWORD = os.getenv('NEUTRON_PASSWORD', None)
+NOVA_PASSWORD = os.getenv('NOVA_PASSWORD', None)
+PLACEMENT_PASSWORD = os.getenv('PLACEMENT_PASSWORD', None)
 DATABASE_ENDPOINT = os.getenv('DATABASE_ENDPOINT', None)
 RABBITMQ_ENDPOINT = os.getenv('RABBITMQ_ENDPOINT', None)
 MEMCACHE_ENDPOINT = os.getenv('MEMCACHE_ENDPOINT', None)
@@ -22,7 +28,6 @@ CONF_FILE_NAME = os.getenv('CONF_FILE_NAME', None)
 CONFIG_MAP_NAME = os.getenv('CONFIG_MAP_NAME', None)
 AUTH_URL = os.getenv('AUTH_URL', None)
 RBD_SECRET_UUID = os.getenv('RBD_SECRET_UUID', '')
-CINDER_KEYSTONE_PASSWORD = os.getenv('CINDER_KEYSTONE_PASSWORD', None)
 
 LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
 LOG_FORMAT = "%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s"
@@ -77,6 +82,16 @@ def update_connection_fields(content):
                 line = line.replace("database_password_placeholder", DB_PASSWORD)
             if "rabbitmq_password_placeholder" in line:
                 line = line.replace("rabbitmq_password_placeholder", RABBITMQ_PASSWORD)
+            if "glance_password_placeholder" in line:
+                line = line.replace("glance_password_placeholder", GLANCE_PASSWORD)
+            if "cinder_password_placeholder" in line:
+                line = line.replace("cinder_password_placeholder", CINDER_PASSWORD)
+            if "neutron_password_placeholder" in line:
+                line = line.replace("neutron_password_placeholder", NEUTRON_PASSWORD)
+            if "nova_password_placeholder" in line:
+                line = line.replace("nova_password_placeholder", NOVA_PASSWORD)
+            if "placement_password_placeholder" in line:
+                line = line.replace("placement_password_placeholder", PLACEMENT_PASSWORD)
             if "keystone_endpoint_placeholder" in line:
                 line = line.replace("keystone_endpoint_placeholder", KEYSTONE_ENDPOINT)
             if "database_endpoint_placeholder" in line:
@@ -85,6 +100,8 @@ def update_connection_fields(content):
                 line = line.replace("memcache_endpoint_placeholder", MEMCACHE_ENDPOINT)
             if "rabbitmq_endpoint_placeholder" in line:
                 line = line.replace("rabbitmq_endpoint_placeholder", RABBITMQ_ENDPOINT)
+            if "glance_endpoint_placeholder" in line:
+                line = line.replace("glance_endpoint_placeholder", GLANCE_ENDPOINT)
             if "region_placeholder" in line:
                 line = line.replace("region_placeholder", OS_REGION)
             if "rbd_secret_uuid_palceholder" in line:

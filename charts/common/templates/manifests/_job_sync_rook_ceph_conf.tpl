@@ -38,8 +38,8 @@ spec:
               value: {{ $envAll.Release.Namespace | quote }}
             - name: ROOK_CEPH_CLUSTER_NAMESPACE
               value: {{ $envAll.Values.ceph.cephClusterNamespace | quote }}
-            - name: ROOK_CEPH_CLIENT_SECRET
-              value: {{ printf "%s-client-%s" $envAll.Values.ceph.cephClusterName $envAll.Values.ceph.cephClientName | quote }}
+            - name: ROOK_CEPH_CLIENT_NAME
+              value: {{ $envAll.Values.ceph.cephClientName | quote }}
             - name: OS_CEPH_CLIENT_SECRET
               value: {{ printf "ceph-%s" $envAll.Values.ceph.cephClientName | quote }}
           volumeMounts:
@@ -49,8 +49,8 @@ spec:
             name: {{ printf "%s-bin" $serviceName | quote }}
             subPath: sync-ceph-cm-secrets.py
       restartPolicy: OnFailure
-      serviceAccount: {{ $envAll.Values.serviceAccountName}}
-      serviceAccountName: {{ $envAll.Values.serviceAccountName}}
+      serviceAccount: {{ $envAll.Values.serviceAccountName }}
+      serviceAccountName: {{ $envAll.Values.serviceAccountName }}
       volumes:
         - emptyDir: {}
           name: pod-tmp
