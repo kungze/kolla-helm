@@ -70,6 +70,8 @@ spec:
               containerPort: 8776
               protocol: TCP
           volumeMounts:
+            - mountPath: /var/log/kolla/cinder
+              name: cinderlog
             - mountPath: /tmp
               name: pod-tmp
             - mountPath: /var/lib/kolla/config_files/cinder.conf
@@ -81,9 +83,13 @@ spec:
             - mountPath: /var/lib/kolla/config_files/cinder-wsgi.conf
               name: cinder-etc
               subPath: cinder-wsgi.conf
-      serviceAccount: {{ .Values.serviceAccountName}}
-      serviceAccountName: {{ .Values.serviceAccountName}}
+      serviceAccount: {{ .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
       volumes:
+        - hostPath:
+            path: /var/log/kolla/cinder
+            type: DirectoryOrCreate
+          name: cinderlog
         - emptyDir: {}
           name: pod-tmp
         - configMap:

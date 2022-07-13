@@ -2,6 +2,7 @@
 debug = False
 use_forwarded_for = true
 use_stderr = False
+log_dir = /var/log/kolla/cinder
 osapi_volume_workers = 5
 volume_name_template = volume-%s
 volumes_dir = /var/lib/cinder/volumes
@@ -18,7 +19,7 @@ enabled_backends = {{ .Values.ceph.volume_type }}
 default_volume_type = {{ .Values.ceph.volume_type }}
 {{- end }}
 
-{{- if .Values.ceph.backup.anabled }}
+{{- if and .Values.ceph.enabled .Values.ceph.backup.enabled }}
 backup_driver = cinder.backup.drivers.ceph.CephBackupDriver
 backup_ceph_conf = /etc/ceph/ceph.conf
 backup_ceph_user = {{ .Values.ceph.cephClientName }}
@@ -99,4 +100,5 @@ volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver
 volume_backend_name = {{ .Values.lvm.volume_type }}
 target_helper = {{ .Values.lvm.lvm_target_helper }}
 target_protocol = iscsi
+lvm_type = default
 {{- end }}
