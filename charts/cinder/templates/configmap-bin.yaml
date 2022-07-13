@@ -28,3 +28,5 @@ data:
   sync-ceph-cm-secrets.py: |
 {{- include "common.scripts.sync_ceph_cm_secret" . | indent 4 }}
   {{- end }}
+  volume-type-create.sh: |
+{{ tuple "bin/_volume_type_create.sh.tpl" . | include "common.utils.template" | indent 4 }}

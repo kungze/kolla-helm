@@ -1,0 +1,95 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cinder-type-create
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: cinder-bootstrap
+          image: {{ template "cinder.api.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - /tmp/volume-type-create.sh
+          env:
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: OS_USERNAME
+                  name: {{ .Values.keystoneRelease }}
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: keystone-admin-password
+                  name: {{ .Values.passwordRelease }}
+            - name: OS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  key: OS_CLUSTER_URL
+                  name: {{ .Values.keystoneRelease }}
+            - name: OS_REGION_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: OS_REGION_NAME
+                  name: {{ .Values.keystoneRelease }}
+            - name: OS_PROJECT_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: OS_PROJECT_DOMAIN_NAME
+                  name: {{ .Values.keystoneRelease }}
+            - name: OS_USER_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: OS_USER_DOMAIN_NAME
+                  name: {{ .Values.keystoneRelease }}
+            - name: OS_PROJECT_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: OS_PROJECT_NAME
+                  name: {{ .Values.keystoneRelease }}
+            - name: OS_DEFAULT_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  key: OS_DEFAULT_DOMAIN
+                  name: {{ .Values.keystoneRelease }}
+          volumeMounts:
+          - mountPath: /tmp
+            name: pod-tmp
+          - mountPath: /tmp/volume-type-create.sh
+            name: cinder-bin
+            subPath: volume-type-create.sh
+      initContainers:
+        - name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command:
+            - kubernetes-entrypoint
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: "cinder-api"
+      restartPolicy: OnFailure
+      serviceAccount: {{ .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+        - emptyDir: {}
+          name: pod-tmp
+        - name: cinder-bin
+          configMap:
+            defaultMode: 0755
+            name: cinder-bin
