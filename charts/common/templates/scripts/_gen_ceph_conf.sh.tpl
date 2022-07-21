@@ -3,7 +3,7 @@
 
 CEPH_CONFIG="/etc/ceph/ceph.conf"
 MON_CONFIG="/etc/rook/mon-endpoints"
-KEYRING_FILE="/etc/ceph/keyring"
+KEYRING_FILE="/etc/ceph/ceph.client.$ROOK_CEPH_USERNAME.keyring"
 
 # create a ceph config file in its default location so ceph/rados tools can be used
 # without specifying any arguments
