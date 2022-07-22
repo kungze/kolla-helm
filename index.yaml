@@ -2,6 +2,21 @@ apiVersion: v1
 entries:
   cinder:
   - apiVersion: v2
+    created: "2022-07-22T06:34:53.981330934Z"
+    dependencies:
+    - name: common
+      repository: https://kungze.github.io/kolla-helm
+      version: 1.x.x
+    description: Openstack cinder service
+    digest: 6b051a39b8fad86cecf299a86590e6b1d699e5d4e045390a2205ed9041895b67
+    home: https://github.com/kungze/kolla-helm
+    maintainers:
+    - name: Kungze
+    name: cinder
+    urls:
+    - https://github.com/kungze/kolla-helm/releases/download/cinder-1.0.2/cinder-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
     created: "2022-06-08T03:35:25.470796861Z"
     dependencies:
     - name: common
@@ -220,4 +235,4 @@ entries:
     urls:
     - https://github.com/kungze/kolla-helm/releases/download/password-1.0.0/password-1.0.0.tgz
     version: 1.0.0
-generated: "2022-07-21T03:20:06.479143073Z"
+generated: "2022-07-22T06:34:53.981583534Z"
