@@ -119,6 +119,22 @@ entries:
     urls:
     - https://github.com/kungze/kolla-helm/releases/download/common-1.0.0/common-1.0.0.tgz
     version: 1.0.0
+  glance:
+  - apiVersion: v2
+    created: "2022-07-26T08:13:50.208465506Z"
+    dependencies:
+    - name: common
+      repository: https://kungze.github.io/kolla-helm
+      version: 1.x.x
+    description: Openstack glance service
+    digest: f439b5bf338e622506fce71625f01bd3daeff392fc34157225a5d2b66588402d
+    home: https://github.com/kungze/kolla-helm
+    maintainers:
+    - name: Kungze
+    name: glance
+    urls:
+    - https://github.com/kungze/kolla-helm/releases/download/glance-1.0.0/glance-1.0.0.tgz
+    version: 1.0.0
   keystone:
   - apiVersion: v2
     created: "2022-05-27T07:18:08.79792941Z"
@@ -247,4 +263,4 @@ entries:
     urls:
     - https://github.com/kungze/kolla-helm/releases/download/password-1.0.0/password-1.0.0.tgz
     version: 1.0.0
-generated: "2022-07-26T06:22:17.922656774Z"
+generated: "2022-07-26T08:13:50.208499Z"
