@@ -1,0 +1,1 @@
+{{ dict "envAll" . "serviceName" "horizon" "servicePort" 8181 | include "common.manifests.serviceApi" }}

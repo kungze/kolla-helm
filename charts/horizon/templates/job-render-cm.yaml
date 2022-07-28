@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: horizon-cm-render
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  template:
+    spec:
+      activeDeadlineSeconds: 100
+      containers:
+        - name: horizon-cm-render
+          image: {{ include "common.images.kolla-toolbox" . | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - python3 /tmp/configmap-render.py
+          env:
+            - name: CONF_FILE_NAME
+              value: local-settings
+            - name: CONFIG_MAP_NAME
+              value: horizon-etc
+            - name: KUBERNETES_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: MEMCACHE_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  key: MEMCACHE
+                  name: {{ .Values.openstackDepRelease | quote }}
+            - name: KEYSTONE_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  key: KEYSTONE_INTERNAL_ENDPOINT
+                  name: {{ .Values.openstackDepRelease | quote }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: pod-tmp
+            - mountPath: /tmp/configmap-render.py
+              name: horizon-bin
+              subPath: configmap-render.py
+            - mountPath: /etc/sudoers.d/kolla_ansible_sudoers
+              name: horizon-etc
+              subPath: kolla-toolbox-sudoer
+      restartPolicy: OnFailure
+      serviceAccount: {{ .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+      - emptyDir: {}
+        name: pod-tmp
+      - configMap:
+          defaultMode: 0755
+          name: horizon-bin
+        name: horizon-bin
+      - configMap:
+          defaultMode: 0755
+          name: horizon-etc
+        name: horizon-etc

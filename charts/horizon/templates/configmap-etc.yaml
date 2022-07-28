@@ -1,0 +1,18 @@
+{{- $envAll := . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: horizon-etc
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  kolla-toolbox-sudoer: |
+    ansible ALL=(ALL) NOPASSWD: ALL
+  horizon.conf: |
+{{ tuple "conf/_horizon.conf.tpl" . | include "common.utils.template" |indent 4 }}
+  horizon.json: |
+{{ tuple "conf/_horizon.json.tpl" . | include "common.utils.template" |indent 4 }}
+  local-settings: |
+{{ tuple "conf/_local_settings.tpl" . | include "common.utils.template" |indent 4 }}
+  custom_local_settings: |
+{{ tuple "conf/_custom_local_settings.tpl" . | include "common.utils.template" |indent 4 }}
