@@ -21,8 +21,6 @@ spec:
               value: {{ .Release.Namespace }}
             - name: ROOK_CEPH_CLUSTER_NAMESPACE
               value: {{ .Values.ceph.cephClusterNamespace }}
-            - name: ROOK_CEPH_MON_ENDPOINTS_CONFIGMAP
-              value:  {{ printf "%s-mon-endpoints" .Values.ceph.cephClusterName }}
             - name: OS_CEPH_MON_CONFIGMAP
               value: "ceph-monitor-endpoints"
           volumeMounts:
