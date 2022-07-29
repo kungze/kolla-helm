@@ -28,6 +28,7 @@ CONF_FILE_NAME = os.getenv('CONF_FILE_NAME', None)
 CONFIG_MAP_NAME = os.getenv('CONFIG_MAP_NAME', None)
 AUTH_URL = os.getenv('AUTH_URL', None)
 RBD_SECRET_UUID = os.getenv('RBD_SECRET_UUID', '')
+NODE_IP_ADDRESS = os.getenv('NODE_IP_ADDRESS', None)
 
 LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
 LOG_FORMAT = "%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s"
@@ -106,6 +107,8 @@ def update_connection_fields(content):
                 line = line.replace("region_placeholder", OS_REGION)
             if "rbd_secret_uuid_palceholder" in line:
                 line = line.replace("rbd_secret_uuid_palceholder", RBD_SECRET_UUID)
+            if "node_ipaddress_palceholder" in line:
+                line = line.replace("node_ipaddress_palceholder", NODE_IP_ADDRESS)
             f.write(line + "\n")
             f.truncate()
 
