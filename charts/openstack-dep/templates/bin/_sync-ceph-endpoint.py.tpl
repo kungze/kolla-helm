@@ -9,7 +9,6 @@ KUBE_CERT = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 KUBE_TOKEN = None
 NAMESPACE = os.environ['KUBERNETES_NAMESPACE']
 ROOK_CEPH_CLUSTER_NAMESPACE = os.getenv('ROOK_CEPH_CLUSTER_NAMESPACE', None)
-ROOK_CEPH_MON_ENDPOINTS_CONFIGMAP = os.getenv('ROOK_CEPH_MON_ENDPOINTS_CONFIGMAP', None)
 OS_CEPH_MON_CONFIGMAP = os.getenv('OS_CEPH_MON_CONFIGMAP', None)
 
 LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
@@ -75,7 +74,7 @@ def update_configmap(configmap):
 
 def main():
     read_kube_config()
-    rook_cm = get_rook_configmap(ROOK_CEPH_MON_ENDPOINTS_CONFIGMAP)
+    rook_cm = get_rook_configmap('rook-ceph-mon-endpoints')
 
     self_cm = get_self_configmap(OS_CEPH_MON_CONFIGMAP)
     self_cm['data'] = rook_cm['data']
