@@ -1,0 +1,15 @@
+{{- define "placement.sync_db.volumeMounts" -}}
+{{- $envAll := index . 0 -}}
+volumeMounts:
+  - name: placement-etc
+    mountPath: /var/lib/kolla/config_files/placement.conf
+    subPath: placement.conf
+{{- end }}
+
+{{- $local := dict "podVolMounts" false -}}
+{{- $envAll := index . -}}
+{{- $_ := set $local "podVolMounts" ( index ( tuple . | include "placement.sync_db.volumeMounts" | toString | fromYaml ) "volumeMounts" ) }}
+{{- $dependencyJobs := list "placement-db-init" "placement-cm-render" -}}
+{{- $image := include "placement.placement-api.image" . -}}
+{{- $dbSyncJob := dict "envAll" . "serviceName" "placement" "dependencyJobs" $dependencyJobs "podVolMounts" $local.podVolMounts "image" $image -}}
+{{ $dbSyncJob | include "common.manifests.job_db_sync" }}
