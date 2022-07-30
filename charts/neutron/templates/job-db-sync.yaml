@@ -1,0 +1,15 @@
+{{- define "neutron.sync_db.volumeMounts" -}}
+{{- $envAll := index . 0 -}}
+volumeMounts:
+  - name: neutron-etc
+    mountPath: /var/lib/kolla/config_files/neutron.conf
+    subPath: neutron.conf
+{{- end }}
+
+{{- $local := dict "podVolMounts" false -}}
+{{- $envAll := index . -}}
+{{- $_ := set $local "podVolMounts" ( index ( tuple . | include "neutron.sync_db.volumeMounts" | toString | fromYaml ) "volumeMounts" ) }}
+{{- $dependencyJobs := list "neutron-db-init" "neutron-cm-render" -}}
+{{- $image := include "neutron.server.image" . -}}
+{{- $dbSyncJob := dict "envAll" . "serviceName" "neutron" "dependencyJobs" $dependencyJobs "podVolMounts" $local.podVolMounts "image" $image -}}
+{{ $dbSyncJob | include "common.manifests.job_db_sync" }}

@@ -1,0 +1,52 @@
+name: Install neutron chart
+
+on:
+  pull_request:
+    paths:
+      - 'charts/neutron/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.2.1
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
+
+      - name: create virt interface
+        run: tests/scripts/github-action-helper.sh create_virt_interface_test
+
+      - name: Create k8s namespace
+        run:
+          kubectl create namespace test-neutron
+
+      - name: Install password chart
+        run:
+          helm install openstack-password charts/password --namespace test-neutron
+
+      - name: Install openstack-dep chart
+        run: |
+          helm dependency build charts/openstack-dep
+          helm install openstack-dependency charts/openstack-dep --namespace test-neutron --wait --timeout 600s
+
+      - name: Install keystone chart
+        run: |
+          helm dependency build charts/keystone
+          helm install openstack-keystone charts/keystone --namespace test-neutron --wait --timeout 600s
+
+      - name: Run chart-testing (install)
+        run: ct install --namespace test-neutron --target-branch main --charts charts/neutron --debug --helm-extra-args "--timeout 600s"
+
+      - name: setup tmate session for debugging when event is PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 60
+

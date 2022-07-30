@@ -1,0 +1,21 @@
+{{- define "neutron.connInfo.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: SECRET_ADMIN_KEY
+    value: NEUTRON_ADMIN_ENDPOINT
+  - name: SECRET_ADMIN_VALUES
+    value: {{ include "neutron.cluster.endpoint" $envAll | b64enc | quote }}
+  - name: SECRET_INTERNAL_KEY
+    value: NEUTRON_INTERNAL_ENDPOINT
+  - name: SECRET_INTERNAL_VALUES
+    value: {{ include "neutron.cluster.endpoint" $envAll | b64enc | quote }}
+  - name: SECRET_PUBLIC_KEY
+    value: NEUTRON_PUBLIC_ENDPOINT
+  - name: SECRET_PUBLIC_VALUES
+    value: {{ include "neutron.cluster.endpoint" $envAll | b64enc | quote }}
+{{- end -}}
+
+{{- $envAll := index . -}}
+{{- $podEnvVars := tuple . | include "neutron.connInfo.podEnvVars" | toString | fromYaml }}
+{{- $cmUpdateConnInfoJob := dict "envAll" . "serviceName" "neutron" "connInfoSecretName" $envAll.Values.openstackDepRelease "podEnvVars" $podEnvVars.env -}}
+{{ $cmUpdateConnInfoJob | include "common.manifests.job_update_conn_info" }}

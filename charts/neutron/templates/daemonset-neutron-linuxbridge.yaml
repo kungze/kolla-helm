@@ -1,0 +1,67 @@
+{{- if .Values.neutron_linuxbridge_agent.enabled }}
+---
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: DaemonSet
+metadata:
+  name: neutron-linuxbridge
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: neutron-linuxbridge
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: DEPENDENCY_JOBS
+            value: "neutron-db-sync,neutron-register"
+      containers:
+        - name: neutron-linuxbridge
+          securityContext:
+            privileged: true
+          image: {{ template "neutron.linuxbridge.image" . }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env: 
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "neutron-linuxbridge"
+          volumeMounts:
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/config.json
+              subPath: neutron-linuxbridge-agent.json
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/neutron.conf
+              subPath: neutron.conf
+            - name: neutron-etc
+              mountPath: /var/lib/kolla/config_files/linuxbridge_agent.ini
+              subPath: linuxbridge_agent.ini
+      serviceAccount: {{ .Values.serviceAccountName}}
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      volumes:
+        - name: neutron-etc
+          configMap:
+            name: neutron-etc
+{{- end }}
