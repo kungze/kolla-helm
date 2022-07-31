@@ -8,6 +8,11 @@ env:
       secretKeyRef:
         name: {{ $envAll.Values.passwordRelease | quote }}
         key: "rbd-secret-uuid"
+  - name: GLANCE_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        key: GLANCE_INTERNAL_ENDPOINT
+        name: {{ $envAll.Values.openstackDepRelease | quote }}
 {{- end -}}
 
 {{- $envAll := index . -}}
