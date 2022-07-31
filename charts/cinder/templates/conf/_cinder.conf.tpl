@@ -7,6 +7,8 @@ osapi_volume_workers = 5
 volume_name_template = volume-%s
 volumes_dir = /var/lib/cinder/volumes
 os_region_name = region_placeholder
+glance_api_servers = glance_endpoint_placeholder
+glance_api_version = 2
 
 {{- if and .Values.lvm.enabled .Values.ceph.enabled }}
 enabled_backends = {{ printf "%s,%s" (.Values.lvm.volume_type) (.Values.ceph.volume_type) }}
