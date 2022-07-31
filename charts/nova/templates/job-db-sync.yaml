@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nova-db-sync
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  template:
+    spec:
+      activeDeadlineSeconds: 300
+      containers:
+      - name: nova-db-sync
+        image: {{ template "nova.api.image" . }}
+        imagePullPolicy: {{ .Values.pullPolicy }}
+        command:
+          - "/bin/sh"
+          - "-c"
+          - "/tmp/nova-db-sync.sh"
+        volumeMounts:
+        - mountPath: /var/log/kolla/nova
+          name: logdir
+        - mountPath: /tmp
+          name: pod-tmp
+        - mountPath: /etc/nova/nova.conf
+          name: nova-etc
+          subPath: nova.conf
+        - mountPath: /tmp/nova-db-sync.sh
+          name: nova-bin
+          subPath: nova-db-sync.sh
+      initContainers:
+      - name: init 
+        command:
+        - kubernetes-entrypoint
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: PATH
+          value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+        - name: DEPENDENCY_JOBS
+          value: nova-db-init,nova-cm-render
+        image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+        imagePullPolicy: {{ .Values.pullPolicy }}
+      restartPolicy: OnFailure
+      serviceAccount: {{ .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+      - emptyDir: {}
+        name: logdir
+      - emptyDir: {}
+        name: pod-tmp
+      - configMap:
+          defaultMode: 493
+          name: nova-bin
+        name: nova-bin
+      - configMap:
+          defaultMode: 420
+          name: nova-etc
+        name: nova-etc
