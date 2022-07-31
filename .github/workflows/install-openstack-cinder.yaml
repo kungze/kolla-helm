@@ -50,5 +50,10 @@ jobs:
           helm dependency build charts/keystone
           helm install openstack-keystone charts/keystone --namespace test-cinder --wait --timeout 600s
 
+      - name: Install glance chart
+        run: |
+          helm dependency build charts/glance
+          helm install glance charts/glance --namespace test-cinder --wait --timeout 600s
+
       - name: Run chart-testing (install)
         run: ct install --namespace test-cinder --target-branch main --charts charts/cinder --debug --helm-extra-args "--timeout 600s"
