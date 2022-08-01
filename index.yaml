@@ -291,4 +291,20 @@ entries:
     urls:
     - https://github.com/kungze/kolla-helm/releases/download/password-1.0.0/password-1.0.0.tgz
     version: 1.0.0
-generated: "2022-07-30T03:55:55.092681742Z"
+  placement:
+  - apiVersion: v2
+    created: "2022-08-01T01:43:52.644838927Z"
+    dependencies:
+    - name: common
+      repository: https://kungze.github.io/kolla-helm
+      version: 1.x.x
+    description: Openstack placement service
+    digest: a880b942cb0b167558ce3a8dd6c04ab07ec4fa59124624f71ad43fadee16ea4e
+    home: https://github.com/kungze/kolla-helm
+    maintainers:
+    - name: Kungze
+    name: placement
+    urls:
+    - https://github.com/kungze/kolla-helm/releases/download/placement-1.0.0/placement-1.0.0.tgz
+    version: 1.0.0
+generated: "2022-08-01T01:43:52.644872628Z"
