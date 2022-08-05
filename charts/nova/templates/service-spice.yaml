@@ -1,0 +1,3 @@
+{{- if .Values.enabled_spice }}
+{{ dict "envAll" . "serviceName" "spiceproxy" "servicePort" 6082 | include "common.manifests.serviceApi" }}
+{{- end }}

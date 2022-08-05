@@ -1,0 +1,3 @@
+{{- if .Values.enabled_vnc }}
+{{ dict "envAll" . "serviceName" "novncproxy" "servicePort" 6080 | include "common.manifests.serviceApi" }}
+{{- end }}
