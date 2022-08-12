@@ -1,0 +1,3 @@
+{{- if .Values.ingress.enabled }}
+{{ dict "envAll" . "serviceName" "horizon" "servicePort" 8181 | include "common.manifests.ingressApi" }}
+{{- end }}

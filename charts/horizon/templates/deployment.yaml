@@ -1,0 +1,103 @@
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: horizon
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: horizon-api
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: horizon-api
+    spec:
+      initContainers:
+        - command:
+          - kubernetes-entrypoint
+          name: init
+          image: {{ include "common.images.kubernetes-entrypoint" (dict "registry" .Values.imageRegistry "namespace" .Values.imageNamespace) | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: INTERFACE_NAME
+            value: eth0
+          - name: DEPENDENCY_JOBS
+            value: "horizon-cm-render"
+      containers:
+        - name: horizon
+          image: docker.io/kolla/ubuntu-binary-horizon:yoga
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env:
+            - name: KOLLA_CONFIG_STRATEGY
+              value: "COPY_ALWAYS"
+            - name: KOLLA_SERVICE_NAME
+              value: "horizon"
+          ports:
+            - name: horizon-api
+              containerPort: 8181
+              protocol: TCP
+          {{- if .Values.enableLivenessProbe }}
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /horizon
+              port: 8181
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
+          {{- if .Values.enableReadinessProbe }}
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /horizon
+              port: 8181
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
+          volumeMounts:
+          - mountPath: /var/log/kolla/horizon
+            name: kollalog
+            mountPropagation: "HostToContainer"
+          - mountPath: /var/lib/kolla/config_files/local_settings
+            name: horizon-etc
+            subPath: local-settings
+          - mountPath: /var/lib/kolla/config_files/config.json
+            name: horizon-etc
+            subPath: horizon.json
+          - mountPath: /var/lib/kolla/config_files/horizon.conf
+            name: horizon-etc
+            subPath: horizon.conf
+          - mountPath: /var/lib/kolla/config_files/custom_local_settings
+            name: horizon-etc
+            subPath: custom_local_settings
+      serviceAccount: {{ .Values.serviceAccountName }}
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+      - hostPath:
+          path: /var/log/kolla/horizon
+          type: DirectoryOrCreate
+        name: kollalog
+      - configMap:
+          defaultMode: 420
+          name: horizon-etc
+        name: horizon-etc

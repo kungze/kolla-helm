@@ -1,0 +1,114 @@
+{
+    "title": "Chart Values",
+    "type": "object",
+    "properties": {
+        "cluster_domain_suffix": {
+            "form": true,
+            "type": "string",
+            "description": "The doamin suffix of the current k8s cluster",
+            "title": "Cluster Domain Suffix",
+            "default": "cluster.local"
+        },
+        "openstackDepRelease": {
+            "form": true,
+            "type": "string",
+            "description": "The release name of openstack-dep chart",
+            "title": "Openstack-dep Release",
+            "default": "openstack-dependency"
+        },
+        "passwordRelease": {
+            "form": true,
+            "type": "string",
+            "description": "The release name of password chart",
+            "title": "Password Release",
+            "default": "openstack-password"
+        },
+        "keystoneRelease": {
+            "form": true,
+            "type": "string",
+            "description": "The release name of keystone chart",
+            "title": "keystone Release",
+            "default": "openstack-keystone"
+        },
+        "imageRegistry": {
+            "form": true,
+            "type": "string",
+            "description": "The registry address of openstack kolla image",
+            "title": "Image Registry",
+            "default": "registry.aliyuncs.com"
+        },
+        "imageNamespace": {
+            "form": true,
+            "type": "string",
+            "description": "The registry namespace of openstack kolla image",
+            "title": "Image Namespace",
+            "default": "kolla-helm"
+        },
+        "openstackTag": {
+            "form": true,
+            "type": "string",
+            "description": "The openstack version",
+            "title": "Openstack version",
+            "default": "yoga"
+        },
+        "pullPolicy": {
+            "form": true,
+            "type": "string",
+            "description": "The image pull policy",
+            "title": "Pull Policy",
+            "default": "IfNotPresent"
+        },
+        "replicaCount": {
+            "form": true,
+            "type": "number",
+            "description": "Number of cinder replicas to deploy (requires ReadWriteMany PVC support)",
+            "default": 1
+        },
+        "serviceAccountName": {
+            "form": true,
+            "type": "string",
+            "description": "ServiceAccount name",
+            "default": "horizon"
+        },
+        "enableLivenessProbe": {
+            "form": true,
+            "type": "boolean",
+            "description": "Whether or not enable liveness probe",
+            "title": "Enable Liveness Probe",
+            "default": true
+        },
+        "enableReadinessProbe": {
+            "form": true,
+            "type": "boolean",
+            "description": "Whether or not enable readiness probe",
+            "title": "Enable Readliness Probe",
+            "default": true
+        },
+        "ingress": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "form": true,
+                    "type": "boolean",
+                    "description": "Whether or not create ingress for keystone service",
+                    "title": "Ingress",
+                    "default": true
+                },
+                "ingressClass": {
+                    "form": true,
+                    "type": "string",
+                    "description": "Ingress Class Name",
+                    "title": "Ingress Class",
+                    "default": "openstack-nginx"
+                },
+                "path": {
+                    "form": true,
+                    "type": "string",
+                    "description": "Ingress will match the path prefix, and forward the matched request to keystone service",
+                    "title": "Path Prefix",
+                    "default": "horizon"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,40 @@
+name: Install horizon Chart
+
+on:
+  pull_request:
+    paths:
+      - 'charts/horizon/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.2.1
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
+
+      - name: Install password chart
+        run: |
+          kubectl create namespace openstack-keystone
+          helm install openstack-password charts/password --namespace openstack-keystone
+
+      - name: Install openstack-dep chart
+        run: |
+          helm dependency build charts/openstack-dep
+          helm install openstack-dependency charts/openstack-dep --namespace openstack-keystone --wait --timeout 600s
+
+      - name: Install keystone chart
+        run: |
+          helm dependency build charts/keystone
+          helm install openstack-keystone charts/keystone --namespace openstack-keystone --wait --timeout 600s
+
+      - name: Run chart-testing (install)
+        run: ct install --target-branch main --charts charts/horizon --namespace openstack-keystone --debug --helm-extra-args "--timeout 600s"

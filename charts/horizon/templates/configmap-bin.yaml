@@ -1,0 +1,10 @@
+{{- $envAll := . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: horizon-bin
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  configmap-render.py: |
+{{ include "common.scripts.configmap_render" . | indent 4 }}
