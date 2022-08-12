@@ -1,0 +1,17 @@
+{{- define "neutron.render.podEnvVars" -}}
+{{- $envAll := index . 0 -}}
+env:
+  - name: CONF_FILE_NAME
+    value: neutron.conf
+  - name: NOVA_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: nova-keystone-password
+        name: {{ $envAll.Values.passwordRelease | quote }}
+{{- end -}}
+
+{{- $envAll := index . -}}
+{{- $podEnvVars := tuple . | include "neutron.render.podEnvVars" | toString | fromYaml }}
+{{- $dependencyJobs := list "neutron-update-openstack-conn-info" -}}
+{{- $cmRenderJob := dict "envAll" . "serviceName" "neutron" "dependencyJobs" $dependencyJobs "podEnvVars" $podEnvVars.env -}}
+{{ $cmRenderJob | include "common.manifests.job_cm_render" }}

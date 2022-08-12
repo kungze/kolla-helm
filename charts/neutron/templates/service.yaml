@@ -1,0 +1,1 @@
+{{ dict "envAll" . "serviceName" "neutron" "servicePort" 9696 | include "common.manifests.serviceApi" }}
